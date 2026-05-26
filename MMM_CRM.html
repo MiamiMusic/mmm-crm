@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMM CRM — Miami Music Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--black:#080808;--denim:#336A92;--gold:#93812F;--auburn:#8A271E;--dirty:#3F8594;--green:#2a7a4a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;--border:#2a2a2a;--text:#f0f0f0;--text2:#a0a0a0;--text3:#606060}
+html,body{height:100%;background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:2px;height:48px;flex-shrink:0;position:sticky;top:0;z-index:50;overflow-x:auto}
+.brand{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;letter-spacing:2px;color:var(--denim);margin-right:10px;flex-shrink:0}.brand span{color:var(--gold)}
+.nav-btn{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:11px;letter-spacing:1px;text-transform:uppercase;background:none;border:none;color:var(--text2);cursor:pointer;padding:5px 10px;border-radius:4px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.nav-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-btn.active{color:var(--denim);background:rgba(51,106,146,.15)}
+.nav-right{margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;white-space:nowrap;padding-left:10px;flex-shrink:0}
+.main{flex:1;padding:18px;overflow:auto}
+.section{display:none}.section.active{display:block}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
+.page-sub{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px}
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
+.stat-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700}
+.stat-sub{font-size:9px;color:var(--text3);margin-top:2px}
+.c-denim{color:var(--denim)}.c-gold{color:var(--gold)}.c-auburn{color:var(--auburn)}.c-dirty{color:var(--dirty)}.c-green{color:#4caf7a}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.card-link{color:var(--denim);cursor:pointer;font-size:9px;text-decoration:none;background:none;border:none}.card-link:hover{color:var(--text)}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.search-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;flex:1;min-width:140px;outline:none}
+.search-box:focus{border-color:var(--denim)}
+.filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
+.filter-btn:hover,.filter-btn.active{background:var(--surface2);color:var(--text);border-color:var(--denim)}
+.action-btn{background:var(--denim);border:none;border-radius:4px;padding:6px 12px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.action-btn:hover{opacity:.85}
+.action-btn.gold{background:var(--gold)}.action-btn.auburn{background:var(--auburn)}.action-btn.green{background:var(--green)}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:8px;font-size:12px;color:var(--text)}
+.td-name{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;letter-spacing:.3px}
+.td-sub{font-size:9px;color:var(--text3);margin-top:1px}
+.badge{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap}
+.badge-denim{background:rgba(51,106,146,.15);color:var(--denim)}
+.badge-gold{background:rgba(147,129,47,.15);color:var(--gold)}
+.badge-auburn{background:rgba(138,39,30,.2);color:#c0514a}
+.badge-dirty{background:rgba(63,133,148,.15);color:var(--dirty)}
+.badge-gray{background:var(--surface2);color:var(--text3)}
+.badge-green{background:rgba(42,122,74,.2);color:#4caf7a}
+.alert-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dot-red{background:var(--auburn)}.dot-gold{background:var(--gold)}.dot-blue{background:var(--denim)}.dot-green{background:#4caf7a}
+.alert-text{font-size:11px;color:var(--text);line-height:1.5}
+.alert-time{font-size:9px;color:var(--text3);margin-top:1px}
+.roster-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.roster-item:last-child{border-bottom:none}
+.avatar{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:1px;flex-shrink:0}
+.av-denim{background:rgba(51,106,146,.2);color:var(--denim)}
+.av-gold{background:rgba(147,129,47,.2);color:var(--gold)}
+.av-auburn{background:rgba(138,39,30,.2);color:#c0514a}
+.av-dirty{background:rgba(63,133,148,.2);color:var(--dirty)}
+.roster-name{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;flex:1}
+.roster-meta{font-size:9px;color:var(--text3)}
+.royalty-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.royalty-row:last-child{border-bottom:none}
+.royalty-bar-wrap{flex:1;background:var(--surface2);border-radius:2px;height:5px}
+.royalty-bar{height:5px;border-radius:2px}
+.deal-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px}
+.deal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.deal-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px}
+.deal-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.deal-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.deal-progress{margin-top:10px}
+.deal-progress-label{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px}
+.deal-bar-wrap{background:var(--surface2);border-radius:2px;height:4px}
+.deal-bar{height:4px;border-radius:2px;background:var(--denim)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:7px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;outline:none}
+.form-input:focus{border-color:var(--denim)}
+select.form-input option{background:var(--surface2)}
+.inv-preview{background:#fff;color:#000;border-radius:6px;padding:28px;font-family:Arial,sans-serif;font-size:12px;line-height:1.5;margin-top:14px}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #000}
+.inv-company{font-weight:700;font-size:13px}
+.inv-title{font-size:20px;font-weight:700;letter-spacing:3px}
+.inv-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.inv-table th{background:#000;color:#fff;padding:7px 8px;text-align:left;font-size:10px;letter-spacing:1px}
+.inv-table td{padding:7px 8px;border-bottom:1px solid #eee;font-size:11px}
+.inv-total-row{display:flex;justify-content:flex-end;gap:20px;font-weight:700;font-size:13px;border-top:2px solid #000;padding-top:10px;margin-bottom:16px}
+.inv-banking{background:#f5f5f5;border-radius:4px;padding:10px;font-size:10px}
+.back-btn{background:none;border:1px solid var(--border);border-radius:4px;padding:4px 10px;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:14px}
+.back-btn:hover{color:var(--text);border-color:var(--text3)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.detail-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
+.detail-card-title{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:3px 0;border-bottom:1px solid var(--border);gap:8px}
+.detail-row:last-child{border-bottom:none}
+.detail-key{font-size:9px;color:var(--text3);flex-shrink:0}
+.detail-val{font-size:10px;color:var(--text);text-align:right;word-break:break-all;font-family:monospace}
+.client-name-lg{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;letter-spacing:2px;text-transform:uppercase}
+.ai-layout{display:grid;grid-template-columns:1fr 260px;gap:12px;height:calc(100vh - 120px)}
+.chat-area{background:var(--surface);border:1px solid var(--border);border-radius:6px;display:flex;flex-direction:column}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.chat-input-row{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px}
+.chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:8px 10px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;outline:none;resize:none}
+.chat-input:focus{border-color:var(--denim)}
+.send-btn{background:var(--denim);border:none;border-radius:4px;padding:8px 14px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;cursor:pointer}
+.send-btn:hover{opacity:.85}.send-btn:disabled{opacity:.4;cursor:default}
+.msg{max-width:88%;padding:8px 12px;border-radius:6px;font-size:12px;line-height:1.6}
+.msg-user{background:rgba(51,106,146,.2);color:var(--text);align-self:flex-end;border:1px solid rgba(51,106,146,.3)}
+.msg-ai{background:var(--surface2);color:var(--text);align-self:flex-start;border:1px solid var(--border)}
+.msg-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;overflow-y:auto}
+.ai-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.quick-btn{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:6px 8px;color:var(--text2);font-family:'Barlow',sans-serif;font-size:11px;cursor:pointer;margin-bottom:4px;text-align:left;transition:all .15s}
+.quick-btn:hover{color:var(--text);border-color:var(--text3)}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sync-bar{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sync-input{flex:1;background:transparent;border:none;color:var(--text);font-family:'Barlow',sans-serif;font-size:11px;outline:none}
+.sync-status{font-size:9px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.sync-status.ok{color:#4caf7a}.sync-status.err{color:var(--auburn)}.sync-status.pending{color:var(--gold)}
+.tab-bar{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.tab-btn{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);cursor:pointer;padding:6px 12px;margin-bottom:-1px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--denim);border-bottom-color:var(--denim)}
+.tab-content{display:none}.tab-content.active{display:block}
+@media print{.topnav{display:none}.inv-preview{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="topnav">
+  <div class="brand">MMM<span>.</span></div>
+  <button class="nav-btn active" onclick="nav('dashboard',this)">Dashboard</button>
+  <button class="nav-btn" onclick="nav('invoices',this)">Invoices</button>
+  <button class="nav-btn" onclick="nav('new-invoice',this)">+ Invoice</button>
+  <button class="nav-btn" onclick="nav('royalties',this)">Royalties</button>
+  <button class="nav-btn" onclick="nav('deals',this)">Deals</button>
+  <button class="nav-btn" onclick="nav('clients',this)">Clients</button>
+  <button class="nav-btn" onclick="nav('publishing',this)">Publishing</button>
+  <button class="nav-btn" onclick="nav('management',this)">Management</button>
+  <button class="nav-btn" onclick="nav('ai',this)">AI</button>
+  <div class="nav-right">FB Projects LLC · Miami</div>
+</nav>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="section-dashboard" class="section active">
+  <div class="page-title">Dashboard</div>
+  <div class="page-sub">Miami Music Management · Live Overview</div>
+  <div class="sync-bar">
+    <span style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);flex-shrink:0">Google Sheet:</span>
+    <input class="sync-input" id="gsheet-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTbK_lgVCwhbpb6svkBaNZpdlWXQZpeg3jM0Sj6_DkG83TXOXloIY3oSjaEadYJ06nVjguZNnX1vfqX/pub?gid=168874316&single=true&output=csv" />
+    <button class="action-btn" onclick="syncGSheet()" style="font-size:9px;padding:4px 10px">Sync Now</button>
+    <span class="sync-status pending" id="sync-status">Not synced</span>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total Invoiced</div><div class="stat-val c-denim" id="stat-total">—</div><div class="stat-sub">2026 YTD (USD)</div></div>
+    <div class="stat-card"><div class="stat-label">Collected</div><div class="stat-val c-green" id="stat-paid">—</div><div class="stat-sub">Paid invoices</div></div>
+    <div class="stat-card"><div class="stat-label">Outstanding</div><div class="stat-val c-auburn" id="stat-unpaid">—</div><div class="stat-sub">Open invoices</div></div>
+    <div class="stat-card"><div class="stat-label">Royalties Est.</div><div class="stat-val c-gold">$24,830</div><div class="stat-sub">PRO + distributor</div></div>
+    <div class="stat-card"><div class="stat-label">Active Deals</div><div class="stat-val c-dirty" id="stat-deals">8</div><div class="stat-sub">Open contracts</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Recent Invoices <button class="card-link" onclick="nav('invoices',document.querySelectorAll('.nav-btn')[1])">View All →</button></div>
+      <div id="dash-inv-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Action Items</div>
+      <div id="dash-alerts"></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Revenue by Producer</div>
+      <div id="dash-producer-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Open Deals <button class="card-link" onclick="nav('deals',document.querySelectorAll('.nav-btn')[4])">View All →</button></div>
+      <div id="dash-deals-preview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICES -->
+<div id="section-invoices" class="section">
+  <div class="section-header">
+    <div><div class="page-title">Invoice Tracker</div><div class="page-sub">Jan–May 2026 · Synced from Google Sheet</div></div>
+    <button class="action-btn gold" onclick="nav('new-invoice',document.querySelectorAll('.nav-btn')[2])">+ New Invoice</button>
+  </div>
+  <div class="toolbar">
+    <input class="search-box" type="text" placeholder="Search artist, producer, #..." id="inv-search" oninput="filterInvoices()">
+    <button class="filter-btn active" onclick="setInvFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setInvFilter('paid',this)">Paid</button>
+    <button class="filter-btn" onclick="setInvFilter('unpaid',this)">Open</button>
+    <button class="filter-btn" onclick="setInvFilter('sync',this)">Sync</button>
+    <button class="filter-btn" onclick="setInvFilter('pa',this)">PA</button>
+    <button class="filter-btn" onclick="setInvFilter('sheet',this)">From Sheet</button>
+    <button class="action-btn" onclick="exportInvCSV()">Export CSV</button>
+  </div>
+  <div style="margin-bottom:10px;display:flex;gap:16px;font-size:11px;color:var(--text3)">
+    Showing <span id="inv-count-label" style="color:var(--text);margin:0 3px">—</span> · Total <span id="inv-total-label" style="color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:600;margin-left:3px">—</span>
+  </div>
+  <table>
+    <thead><tr><th>Date</th><th>Invoice #</th><th>Artist</th><th>Producer</th><th>Type</th><th>Amount</th><th>Status</th><th>Source</th><th>Notes</th></tr></thead>
+    <tbody id="inv-tbody"></tbody>
+  </table>
+</div>
+
+<!-- NEW INVOICE -->
+<div id="section-new-invoice" class="section">
+  <div class="page-title">New Invoice</div>
+  <div class="page-sub">MMM Template · FB Projects LLC</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Invoice Details</div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Date</div><input class="form-input" type="date" id="inv-date"></div>
+        <div class="form-group"><div class="form-label">Invoice #</div><input class="form-input" type="text" id="inv-num" placeholder="MMM052626"></div>
+        <div class="form-group full"><div class="form-label">Bill To — Name</div><input class="form-input" type="text" id="inv-billto" placeholder="Epic Games, Inc."></div>
+        <div class="form-group full"><div class="form-label">Bill To — Address</div><input class="form-input" type="text" id="inv-billaddr" placeholder="620 Crossroads Blvd, Cary NC 27518"></div>
+        <div class="form-group"><div class="form-label">Artist on Roster</div>
+          <select class="form-input" id="inv-artist" onchange="autoFillProducer()">
+            <option value="">— Select —</option>
+            <option>TJ Rivers</option><option>Simo Fre</option><option>Baso</option><option>Lollypop Beatz</option>
+            <option>DamnPablo</option><option>EJ Grimes</option><option>DJ Trebble</option><option>2Side</option>
+            <option>Hype Beatz</option><option>44 WXRLD</option><option>CONZ</option><option>Nessuno</option>
+            <option>Hardbody B-Eazy</option><option>Aydin</option><option>ChillSesh</option><option>Season</option>
+            <option>Klimax</option><option>Vai</option><option>FNF Chop</option><option>Multiple</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Producer Credit</div><input class="form-input" type="text" id="inv-producer" placeholder="Producer name"></div>
+        <div class="form-group"><div class="form-label">Deal Type</div>
+          <select class="form-input" id="inv-subject">
+            <option value="PA">PA (Production Agreement)</option>
+            <option value="Sync License">Sync License</option>
+            <option value="Royalties">Royalties</option>
+            <option value="Consulting">Consulting</option>
+            <option value="Whitelisting">Whitelisting</option>
+            <option value="Collab">Collab</option>
+            <option value="Studio">Studio</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">Currency</div>
+          <select class="form-input" id="inv-currency"><option value="USD">USD $</option><option value="EUR">EUR €</option></select>
+        </div>
+        <div class="form-group full"><div class="form-label">Description</div><input class="form-input" type="text" id="inv-desc" placeholder='Use of "Song Title" / Artists — Context'></div>
+        <div class="form-group"><div class="form-label">Gross Amount</div><input class="form-input" type="number" id="inv-gross" placeholder="1500.00"></div>
+        <div class="form-group"><div class="form-label">Spot Rate %</div><input class="form-input" type="number" id="inv-rate" value="100"></div>
+        <div class="form-group full"><div class="form-label">Due Date</div><input class="form-input" type="text" id="inv-due" value="Upon Receipt"></div>
+        <div class="form-group full"><div class="form-label">Internal Notes</div><input class="form-input" type="text" id="inv-notes" placeholder="Split info, etc."></div>
+      </div>
+      <button class="action-btn gold" style="width:100%;padding:9px" onclick="generateInvoice()">Generate Invoice Preview</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Quick Fill from Roster</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Click to auto-fill artist</div>
+      <div id="quick-fill-list"></div>
+    </div>
+  </div>
+  <div id="invoice-preview-area"></div>
+</div>
+
+<!-- ROYALTIES -->
+<div id="section-royalties" class="section">
+  <div class="page-title">Royalties</div>
+  <div class="page-sub">PRO distributions, mechanical & streaming</div>
+  <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card"><div class="stat-label">BMI (Est. Q1)</div><div class="stat-val c-denim">$12,400</div><div class="stat-sub">Next dist. Q3 2026</div></div>
+    <div class="stat-card"><div class="stat-label">ASCAP (Est. Q1)</div><div class="stat-val c-gold">$6,230</div><div class="stat-sub">Next dist. Aug 2026</div></div>
+    <div class="stat-card"><div class="stat-label">SoundExchange</div><div class="stat-val c-dirty">$4,100</div><div class="stat-sub">Digital performance</div></div>
+    <div class="stat-card"><div class="stat-label">Mechanical / MLC</div><div class="stat-val c-auburn">$2,100</div><div class="stat-sub">Streaming mech.</div></div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('royalties','by-client',this)">By Client</button>
+    <button class="tab-btn" onclick="switchTab('royalties','by-type',this)">By Type</button>
+    <button class="tab-btn" onclick="switchTab('royalties','history',this)">History</button>
+    <button class="tab-btn" onclick="switchTab('royalties','log',this)">Log New</button>
+  </div>
+  <div id="royalties-by-client" class="tab-content active">
+    <table><thead><tr><th>Client</th><th>PRO</th><th>IPI #</th><th>BMI Est.</th><th>ASCAP Est.</th><th>SX Est.</th><th>Total Est.</th><th>Last Paid</th></tr></thead>
+    <tbody id="royalty-client-tbody"></tbody></table>
+  </div>
+  <div id="royalties-by-type" class="tab-content">
+    <div class="three-col">
+      <div class="card"><div class="card-title">Performance (PRO)</div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Simo Fre</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:90%;background:var(--denim)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$4,200</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">TJ Rivers</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:75%;background:var(--denim)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$3,500</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Baso</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:55%;background:var(--denim)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$2,600</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Lollypop</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:35%;background:var(--denim)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$1,600</span></div>
+      </div>
+      <div class="card"><div class="card-title">Mechanical (MLC)</div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">2Side</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:100%;background:var(--gold)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$5,066</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Simo Fre</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:40%;background:var(--gold)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$2,100</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Season</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:20%;background:var(--gold)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$1,050</span></div>
+      </div>
+      <div class="card"><div class="card-title">Sync / License</div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">TJ Rivers</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:100%;background:var(--auburn)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$15,000</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Season</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:3%;background:var(--auburn)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$400</span></div>
+        <div class="royalty-row"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;width:110px">Keep</span><div class="royalty-bar-wrap"><div class="royalty-bar" style="width:2%;background:var(--auburn)"></div></div><span style="font-size:11px;color:var(--gold);width:60px;text-align:right">$225</span></div>
+      </div>
+    </div>
+  </div>
+  <div id="royalties-history" class="tab-content">
+    <table><thead><tr><th>Date</th><th>Client</th><th>Source</th><th>Period</th><th>Gross</th><th>MMM %</th><th>Client Net</th><th>Paid Out</th></tr></thead>
+    <tbody id="royalty-history-tbody"></tbody></table>
+  </div>
+  <div id="royalties-log" class="tab-content">
+    <div class="card" style="max-width:600px">
+      <div class="card-title">Log Royalty Payment</div>
+      <div class="form-grid">
+        <div class="form-group"><div class="form-label">Date Received</div><input class="form-input" type="date" id="ry-date"></div>
+        <div class="form-group"><div class="form-label">Client</div>
+          <select class="form-input" id="ry-client"><option>Simo Fre</option><option>TJ Rivers</option><option>Baso</option><option>2Side</option><option>Lollypop Beatz</option><option>EJ Grimes</option><option>Season</option><option>Nessuno</option><option>DamnPablo</option><option>Keep</option></select>
+        </div>
+        <div class="form-group"><div class="form-label">Source</div>
+          <select class="form-input" id="ry-source"><option>BMI</option><option>ASCAP</option><option>SoundExchange</option><option>MLC</option><option>DistroKid</option><option>Empire</option><option>TuneCore</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><div class="form-label">Period</div><input class="form-input" type="text" id="ry-period" placeholder="Q1 2026"></div>
+        <div class="form-group"><div class="form-label">Gross Amount</div><input class="form-input" type="number" id="ry-gross" placeholder="0.00"></div>
+        <div class="form-group"><div class="form-label">MMM Commission %</div><input class="form-input" type="number" id="ry-comm" value="20"></div>
+        <div class="form-group full"><div class="form-label">Notes</div><input class="form-input" type="text" id="ry-notes" placeholder="Notes"></div>
+      </div>
+      <button class="action-btn green" style="width:100%;padding:9px" onclick="logRoyalty()">Log Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEALS -->
+<div id="section-deals" class="section">
+  <div class="section-header">
+    <div><div class="page-title">Deals & Contracts</div><div class="page-sub">Sync licenses, PAs & publishing agreements</div></div>
+    <button class="action-btn gold" onclick="switchTab('deals','new',document.querySelector('#section-deals .tab-bar .tab-btn:last-child'))">+ New Deal</button>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('deals','active',this)">Active</button>
+    <button class="tab-btn" onclick="switchTab('deals','sync',this)">Sync Licenses</button>
+    <button class="tab-btn" onclick="switchTab('deals','pub',this)">Publishing</button>
+    <button class="tab-btn" onclick="switchTab('deals','closed',this)">Closed</button>
+    <button class="tab-btn" onclick="switchTab('deals','new',this)">+ New</button>
+  </div>
+  <div id="deals-active" class="tab-content active"><div id="deals-active-list"></div></div>
+  <div id="deals-sync" class="tab-content">
+    <table><thead><tr><th>Date</th><th>Artist</th><th>Producer</th><th>Platform / Label</th><th>Value</th><th>Status</th><th>Invoice #</th></tr></thead>
+    <tbody>
+      <tr><td>2026-05-20</td><td><div class="td-name">TJ Rivers</div><div class="td-sub">Plaqueboymax, Rakai, Bunna B</div></td><td>TJ Rivers</td><td>Epic Games / Fortnite</td><td style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">$15,000</td><td><span class="badge badge-auburn">Open</span></td><td style="font-family:monospace;font-size:10px">MMM052026</td></tr>
+      <tr><td>2026-02-06</td><td><div class="td-name">Keep</div></td><td>Keep</td><td>CBS / NFL</td><td style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">$225</td><td><span class="badge badge-green">Paid</span></td><td style="font-family:monospace;font-size:10px">MMM020626A</td></tr>
+      <tr><td>2026-05-05</td><td><div class="td-name">Season</div></td><td>SeasonGoCrazy</td><td>NBA YoungBoy</td><td style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">$150</td><td><span class="badge badge-auburn">Open</span></td><td style="font-family:monospace;font-size:10px">MMM050526A</td></tr>
+      <tr><td>2026-01-13</td><td><div class="td-name">Season</div></td><td>Seasons</td><td>San Francisco 49ers / NFL</td><td style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--gold)">$250</td><td><span class="badge badge-green">Paid</span></td><td style="font-family:monospace;font-size:10px">MMM011326B</td></tr>
+    </tbody></table>
+  </div>
+  <div id="deals-pub" class="tab-content">
+    <table><thead><tr><th>Client</th><th>Legal Name</th><th>PRO</th><th>Publisher</th><th>Writer IPI</th><th>Contract</th><th>Schedule A</th></tr></thead>
+    <tbody id="deals-pub-tbody"></tbody></table>
+  </div>
+  <div id="deals-closed" class="tab-content">
+    <table><thead><tr><th>Date</th><th>Artist</th><th>Deal</th><th>Value</th><th>Invoice #</th></tr></thead>
+    <tbody id="deals-closed-tbody"></tbody></table>
+  </div>
+  <div id="deals-new" class="tab-content">
+    <div class="card" style="max-width:600px">
+      <div class="card-title">New Deal / Contract</div>
+      <div class="form-grid">
+        <div class="form-group full"><div class="form-label">Deal Title</div><input class="form-input" type="text" id="deal-title" placeholder="e.g. Fortnite Sync — TJ Rivers"></div>
+        <div class="form-group"><div class="form-label">Client</div>
+          <select class="form-input" id="deal-client"><option>TJ Rivers</option><option>Simo Fre</option><option>Baso</option><option>Season</option><option>Lollypop Beatz</option><option>EJ Grimes</option><option>2Side</option><option>Nessuno</option><option>DamnPablo</option><option>Keep</option><option>Multiple</option></select>
+        </div>
+        <div class="form-group"><div class="form-label">Deal Type</div>
+          <select class="form-input" id="deal-type"><option>Sync License</option><option>PA (Production Agreement)</option><option>Publishing Admin</option><option>Management</option><option>Royalty Split</option><option>Consulting</option><option>Whitelisting</option></select>
+        </div>
+        <div class="form-group"><div class="form-label">Deal Value</div><input class="form-input" type="number" id="deal-value" placeholder="0.00"></div>
+        <div class="form-group"><div class="form-label">Status</div>
+          <select class="form-input" id="deal-status"><option>Negotiating</option><option>Sent for Signature</option><option>Signed</option><option>Invoiced</option><option>Paid</option></select>
+        </div>
+        <div class="form-group"><div class="form-label">Start Date</div><input class="form-input" type="date" id="deal-start"></div>
+        <div class="form-group"><div class="form-label">Deadline</div><input class="form-input" type="date" id="deal-deadline"></div>
+        <div class="form-group full"><div class="form-label">Notes</div><input class="form-input" type="text" id="deal-notes" placeholder="Contract terms, counterparty, split info..."></div>
+      </div>
+      <button class="action-btn green" style="width:100%;padding:9px" onclick="addDeal()">Save Deal</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENTS -->
+<div id="section-clients" class="section">
+  <div class="section-header"><div><div class="page-title">All Clients</div><div class="page-sub">Management & Publishing roster</div></div></div>
+  <div class="toolbar">
+    <input class="search-box" id="client-search" placeholder="Search..." oninput="filterClients()">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('management',this)">Management</button>
+    <button class="filter-btn" onclick="setFilter('publishing',this)">Publishing</button>
+    <button class="action-btn" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <table><thead><tr><th>Artist</th><th>Legal Name</th><th>PRO</th><th>IPI #</th><th>Type</th><th>Manager</th><th>Commission</th></tr></thead>
+  <tbody id="clients-tbody"></tbody></table>
+</div>
+
+<!-- PUBLISHING -->
+<div id="section-publishing" class="section">
+  <div class="section-header"><div><div class="page-title">Publishing Roster</div><div class="page-sub">MMM Publishing Worldwide · MMM PubSongs Worldwide</div></div></div>
+  <div class="two-col" style="margin-bottom:12px">
+    <div class="card"><div class="detail-card-title" style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">MMM Publishing Worldwide (BMI)</div><div class="detail-row" style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)"><span style="font-size:9px;color:var(--text3)">IPI</span><span style="font-size:10px;font-family:monospace">01161472475</span></div><div class="detail-row" style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:9px;color:var(--text3)">PRO</span><span style="font-size:10px">BMI</span></div></div>
+    <div class="card"><div class="detail-card-title" style="font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">MMM PubSongs Worldwide (ASCAP)</div><div class="detail-row" style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)"><span style="font-size:9px;color:var(--text3)">IPI</span><span style="font-size:10px;font-family:monospace">1290381848</span></div><div class="detail-row" style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:9px;color:var(--text3)">PRO</span><span style="font-size:10px">ASCAP</span></div></div>
+  </div>
+  <table><thead><tr><th>Client</th><th>Legal Name</th><th>PRO</th><th>Writer IPI</th><th>Publisher IPI</th><th>Contract</th><th>Schedule A</th></tr></thead>
+  <tbody id="pub-tbody"></tbody></table>
+</div>
+
+<!-- MANAGEMENT -->
+<div id="section-management" class="section">
+  <div class="section-header"><div><div class="page-title">Management Roster</div><div class="page-sub">Commission splits & co-manager assignments</div></div></div>
+  <table><thead><tr><th>Artist</th><th>Legal Name</th><th>Co-Manager</th><th>Commission</th><th>PRO</th><th>Contact</th><th>Location</th></tr></thead>
+  <tbody id="mgmt-tbody"></tbody></table>
+</div>
+
+<!-- DETAIL -->
+<div id="section-detail" class="section">
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  <div id="detail-content"></div>
+</div>
+
+<!-- AI -->
+<div id="section-ai" class="section">
+  <div class="page-title">AI Assistant</div>
+  <div class="page-sub">Full roster + invoices + royalties + deals</div>
+  <div style="background:rgba(51,106,146,.08);border:1px solid rgba(51,106,146,.2);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text2)">
+    ⚠️ The AI Assistant requires an Anthropic API key to function. <a href="https://console.anthropic.com" target="_blank" style="color:var(--denim)">Get one at console.anthropic.com</a> — then paste it below.
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <input class="search-box" type="password" id="api-key-input" placeholder="Paste your Anthropic API key (sk-ant-...)" style="flex:1">
+    <button class="action-btn" onclick="saveKey()">Save Key</button>
+  </div>
+  <div class="ai-layout">
+    <div class="chat-area">
+      <div class="chat-messages" id="chat-messages">
+        <div><div class="msg-label">MMM AI</div><div class="msg msg-ai">Hey — full MMM context loaded. Roster, invoices, royalties, deals, IPI numbers, wire details. Enter your API key above and ask me anything.</div></div>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-input" rows="2" placeholder="Ask about invoices, clients, royalties..." onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+    <div class="ai-panel">
+      <div class="ai-panel-title">Quick Questions</div>
+      <button class="quick-btn" onclick="quickAsk('What is total revenue collected so far in 2026?')">2026 total revenue</button>
+      <button class="quick-btn" onclick="quickAsk('Which invoices are still open and unpaid?')">Open invoices</button>
+      <button class="quick-btn" onclick="quickAsk('Who are the top earning producers by invoice volume?')">Top producers</button>
+      <button class="quick-btn" onclick="quickAsk('What royalties do we expect from BMI and ASCAP?')">PRO royalty forecast</button>
+      <button class="quick-btn" onclick="quickAsk('List all active sync license deals and their status.')">Active sync deals</button>
+      <button class="quick-btn" onclick="quickAsk('Give me Simo Fre full profile — contact, banking, invoices.')">Simo Fre profile</button>
+      <button class="quick-btn" onclick="quickAsk('Which publishing clients are missing Schedule A?')">Missing Schedule A</button>
+      <button class="quick-btn" onclick="quickAsk('What is the total outstanding across all open invoices?')">Total outstanding</button>
+      <div class="ai-panel-title" style="margin-top:14px">Context Loaded</div>
+      <div style="font-size:9px;color:var(--text3);line-height:2">✓ 17 Management clients<br>✓ 31 Publishing clients<br>✓ 57 invoices (2026)<br>✓ Royalties data<br>✓ 8 active deals<br>✓ Wire / banking details</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const INVOICES=[
+  {date:"2026-05-20",artist:"Fortnite / PBM",producer:"TJ Rivers",subject:"Sync License",amount:15000,currency:"USD",invNum:"MMM052026",paid:false,source:"local",notes:"Epic Games emote deal"},
+  {date:"2026-05-11",artist:"P Yungin",producer:"Multiple",subject:"PA",amount:1600,currency:"USD",invNum:"MMM051126",paid:false,source:"local",notes:""},
+  {date:"2026-05-05",artist:"Hunxho",producer:"Bino",subject:"PA",amount:1500,currency:"USD",invNum:"MMM050526",paid:false,source:"local",notes:""},
+  {date:"2026-05-05",artist:"NBA YoungBoy",producer:"SeasonGoCrazy",subject:"Sync License",amount:150,currency:"USD",invNum:"MMM050526A",paid:false,source:"local",notes:""},
+  {date:"2026-04-28",artist:"DeeBaby",producer:"Areta",subject:"PA",amount:750,currency:"USD",invNum:"MMM042826",paid:false,source:"local",notes:""},
+  {date:"2026-04-27",artist:"Jdot",producer:"Euphoric",subject:"PA",amount:500,currency:"USD",invNum:"MMM042726C",paid:true,source:"local",notes:""},
+  {date:"2026-04-27",artist:"Jdot Breezy",producer:"Simo Fre",subject:"PA",amount:1500,currency:"USD",invNum:"MMM042726A",paid:true,source:"local",notes:""},
+  {date:"2026-04-27",artist:"H3adband",producer:"boo",subject:"PA",amount:7500,currency:"USD",invNum:"",paid:true,source:"local",notes:""},
+  {date:"2026-04-16",artist:"Tay Money",producer:"Simo Fre",subject:"PA",amount:850,currency:"USD",invNum:"MMM041626B",paid:true,source:"local",notes:""},
+  {date:"2026-04-16",artist:"Fatso",producer:"Baso",subject:"PA",amount:600,currency:"USD",invNum:"MMM041626",paid:true,source:"local",notes:""},
+  {date:"2026-04-14",artist:"Loe Shimmy",producer:"Simo Fre",subject:"PA",amount:1500,currency:"USD",invNum:"MMM041426",paid:false,source:"local",notes:""},
+  {date:"2026-04-14",artist:"Fivio Foreign",producer:"Baso",subject:"PA",amount:500,currency:"USD",invNum:"MMM041426A",paid:true,source:"local",notes:""},
+  {date:"2026-04-13",artist:"BGK",producer:"44WXRLD",subject:"PA",amount:650,currency:"USD",invNum:"MMM041326",paid:true,source:"local",notes:""},
+  {date:"2026-04-09",artist:"OMB Peezy",producer:"Gucceo",subject:"PA",amount:1600,currency:"USD",invNum:"MMM040926",paid:true,source:"local",notes:""},
+  {date:"2026-04-08",artist:"Tay Money",producer:"Capped",subject:"PA",amount:500,currency:"USD",invNum:"MMM040826",paid:true,source:"local",notes:""},
+  {date:"2026-04-07",artist:"Lil Zay Osama",producer:"Taz",subject:"PA",amount:500,currency:"USD",invNum:"MMM040726",paid:true,source:"local",notes:""},
+  {date:"2026-04-07",artist:"Big Sosa",producer:"Simo Fre, Kaibeats",subject:"PA",amount:1500,currency:"USD",invNum:"MMM040726A",paid:true,source:"local",notes:"Simo+Kai split"},
+  {date:"2026-04-07",artist:"Billacheck",producer:"DonJuan",subject:"PA",amount:625,currency:"USD",invNum:"MMM040726B",paid:false,source:"local",notes:""},
+  {date:"2026-04-02",artist:"SOD Banroll",producer:"4Feva",subject:"PA",amount:1350,currency:"USD",invNum:"MMM040226",paid:true,source:"local",notes:""},
+  {date:"2026-04-01",artist:"Duetti",producer:"",subject:"Consulting",amount:1050,currency:"USD",invNum:"MMM040126",paid:false,source:"local",notes:""},
+  {date:"2026-03-31",artist:"Reggie",producer:"foolio",subject:"PA",amount:500,currency:"USD",invNum:"MMM033126",paid:true,source:"local",notes:""},
+  {date:"2026-03-30",artist:"Fox BD",producer:"TJ Rivers",subject:"PA",amount:1000,currency:"USD",invNum:"MMM033026A",paid:true,source:"local",notes:""},
+  {date:"2026-03-30",artist:"Controlla",producer:"ChillSesh",subject:"Collab",amount:500,currency:"USD",invNum:"MMM033026",paid:true,source:"local",notes:""},
+  {date:"2026-03-27",artist:"Fredo Bang",producer:"multiple",subject:"PA",amount:22650,currency:"USD",invNum:"MMM032726",paid:true,source:"local",notes:""},
+  {date:"2026-03-27",artist:"Fetty Wap",producer:"Baso",subject:"PA",amount:2500,currency:"USD",invNum:"MMM032726",paid:true,source:"local",notes:""},
+  {date:"2026-03-27",artist:"Fatt Macc",producer:"",subject:"Consulting",amount:750,currency:"USD",invNum:"",paid:true,source:"local",notes:""},
+  {date:"2026-03-25",artist:"Yung Sarria",producer:"DamnPablo",subject:"PA",amount:600,currency:"USD",invNum:"PayPal",paid:true,source:"local",notes:"PayPal"},
+  {date:"2026-03-20",artist:"FCG Heem",producer:"Simo Fre",subject:"PA",amount:750,currency:"USD",invNum:"MMM032026A",paid:false,source:"local",notes:""},
+  {date:"2026-03-20",artist:"Output",producer:"Lollypopbeatz",subject:"Whitelisting",amount:875,currency:"USD",invNum:"MMM032026",paid:true,source:"local",notes:""},
+  {date:"2026-03-17",artist:"Warhol",producer:"Jackson",subject:"PA",amount:500,currency:"USD",invNum:"MMM031726",paid:true,source:"local",notes:""},
+  {date:"2026-03-16",artist:"Warhol",producer:"Terps",subject:"PA",amount:500,currency:"USD",invNum:"MMM031626B",paid:false,source:"local",notes:""},
+  {date:"2026-03-12",artist:"Empire",producer:"2Side",subject:"Royalties",amount:5066.49,currency:"USD",invNum:"MMM031226",paid:true,source:"local",notes:""},
+  {date:"2026-03-11",artist:"Bani",producer:"Terps",subject:"PA",amount:200,currency:"USD",invNum:"MMM03112026",paid:true,source:"local",notes:""},
+  {date:"2026-03-10",artist:"XanMan",producer:"Aydin",subject:"PA",amount:400,currency:"USD",invNum:"MMM031026B",paid:true,source:"local",notes:""},
+  {date:"2026-03-02",artist:"BB Trickz",producer:"Mayze",subject:"PA",amount:1500,currency:"USD",invNum:"MMM03022026B",paid:true,source:"local",notes:""},
+  {date:"2026-03-02",artist:"Summrs",producer:"Jackson",subject:"PA",amount:2000,currency:"USD",invNum:"MMM030226",paid:true,source:"local",notes:""},
+  {date:"2026-02-25",artist:"NBA YB",producer:"Baso, Youngkidd",subject:"PA",amount:4000,currency:"USD",invNum:"MMM022526",paid:true,source:"local",notes:""},
+  {date:"2026-02-25",artist:"Kidd G",producer:"Capped, Harry OB",subject:"PA",amount:1000,currency:"USD",invNum:"MMM022526A",paid:true,source:"local",notes:""},
+  {date:"2026-02-19",artist:"NBA YB",producer:"Simo Fre, Nessuno",subject:"PA",amount:2250,currency:"USD",invNum:"MMM021926A",paid:true,source:"local",notes:""},
+  {date:"2026-02-19",artist:"Danny Towers",producer:"",subject:"Studio",amount:400,currency:"USD",invNum:"MMM021926B",paid:true,source:"local",notes:""},
+  {date:"2026-02-19",artist:"Saint Crook",producer:"Jordji",subject:"PA",amount:250,currency:"USD",invNum:"MMM021926C",paid:true,source:"local",notes:""},
+  {date:"2026-02-18",artist:"Fredo Bang",producer:"Multiple",subject:"PA",amount:6250,currency:"USD",invNum:"MMM021826",paid:true,source:"local",notes:""},
+  {date:"2026-02-18",artist:"Kenny Muney",producer:"Fany 808",subject:"PA",amount:200,currency:"USD",invNum:"MMM021826A",paid:false,source:"local",notes:""},
+  {date:"2026-02-11",artist:"Fashion Forty",producer:"Simo Fre, Airway",subject:"PA",amount:266.67,currency:"EUR",invNum:"MMM021126",paid:true,source:"local",notes:"Still owe Simo"},
+  {date:"2026-02-06",artist:"CBS/NFL",producer:"Keep",subject:"Sync",amount:225,currency:"USD",invNum:"MMM020626A",paid:true,source:"local",notes:""},
+  {date:"2026-02-06",artist:"Mellow",producer:"Choppy",subject:"PA",amount:500,currency:"USD",invNum:"MMM020626",paid:true,source:"local",notes:""},
+  {date:"2026-01-27",artist:"Stunna Gambino",producer:"Bino Beats",subject:"PA",amount:333.33,currency:"USD",invNum:"MMM012726",paid:true,source:"local",notes:""},
+  {date:"2026-01-27",artist:"Tony Boy",producer:"Baso",subject:"PA",amount:3000,currency:"EUR",invNum:"MMM012726",paid:true,source:"local",notes:"EUR"},
+  {date:"2026-01-27",artist:"Quil",producer:"",subject:"Studio",amount:195,currency:"USD",invNum:"MMM012726B",paid:true,source:"local",notes:""},
+  {date:"2026-01-27",artist:"Fashion Forty",producer:"Tiresss",subject:"PA",amount:150,currency:"EUR",invNum:"MMM012726",paid:true,source:"local",notes:"EUR"},
+  {date:"2026-01-26",artist:"1900Rugrat",producer:"TJ Rivers, RomeoRunts",subject:"PA",amount:2000,currency:"USD",invNum:"MMM012626",paid:true,source:"local",notes:""},
+  {date:"2026-01-20",artist:"Money Man",producer:"Marley",subject:"PA",amount:833.33,currency:"USD",invNum:"MMM012026",paid:true,source:"local",notes:""},
+  {date:"2026-01-13",artist:"NBA YB",producer:"Multiple",subject:"PA",amount:4750,currency:"USD",invNum:"MMM011326",paid:true,source:"local",notes:""},
+  {date:"2026-01-13",artist:"49ers",producer:"Seasons",subject:"Sync",amount:250,currency:"USD",invNum:"MMM011326B",paid:true,source:"local",notes:""},
+  {date:"2026-01-12",artist:"Jace",producer:"Tiresss",subject:"PA",amount:1200,currency:"USD",invNum:"MMM011216B",paid:true,source:"local",notes:""},
+  {date:"2026-01-12",artist:"Kevin Gates",producer:"EJ Grimes",subject:"PA",amount:1250,currency:"USD",invNum:"MMM0112216",paid:true,source:"local",notes:""},
+  {date:"2026-01-09",artist:"MAF Teeski",producer:"Lollypopbeatz",subject:"PA",amount:1750,currency:"USD",invNum:"MMM010926",paid:true,source:"local",notes:""},
+  {date:"2026-01-07",artist:"Hoodbaby CJ",producer:"TJ Rivers",subject:"PA",amount:250,currency:"USD",invNum:"MMM010726",paid:true,source:"local",notes:""},
+];
+
+const ROYALTY_HISTORY=[
+  {date:"2026-03-12",client:"2Side",source:"Empire",period:"Q4 2025",gross:5066.49,comm:20,paid:true},
+  {date:"2026-02-20",client:"Lollypopbeatz",source:"BMI",period:"Q3 2025",gross:1200,comm:20,paid:true},
+  {date:"2026-01-15",client:"Simo Fre",source:"BMI",period:"Q3 2025",gross:3800,comm:15,paid:true},
+  {date:"2026-01-15",client:"TJ Rivers",source:"BMI",period:"Q3 2025",gross:2100,comm:20,paid:true},
+  {date:"2025-10-10",client:"Baso",source:"SIAE",period:"Q2 2025",gross:1800,comm:20,paid:true},
+  {date:"2025-09-22",client:"EJ Grimes",source:"ASCAP",period:"Q2 2025",gross:950,comm:20,paid:true},
+];
+
+const DEALS=[
+  {title:"Fortnite Sync — TJ Rivers",client:"TJ Rivers",type:"Sync License",value:15000,status:"Invoiced",start:"2026-05-20",deadline:"2026-06-01",notes:"Epic Games emote. Invoice MMM052026. OPEN."},
+  {title:"NBA YB Publishing — Simo Fre",client:"Simo Fre",type:"PA",value:2250,status:"Paid",start:"2026-02-19",deadline:"",notes:"Multiple placements"},
+  {title:"Fredo Bang — Multiple PAs",client:"Multiple",type:"PA",value:22650,status:"Paid",start:"2026-03-27",deadline:"",notes:"Large batch PA deal"},
+  {title:"Empire Royalties — 2Side",client:"2Side",type:"Royalty Split",value:5066.49,status:"Paid",start:"2026-03-12",deadline:"",notes:"Q4 2025 via Empire"},
+  {title:"Tony Boy — Baso EU Deal",client:"Baso",type:"PA",value:3000,status:"Paid",start:"2026-01-27",deadline:"",notes:"€3,000 EUR — SIAE"},
+  {title:"CBS/NFL — Keep Sync",client:"Keep",type:"Sync License",value:225,status:"Paid",start:"2026-02-06",deadline:"",notes:"NFL cleared via MMM Publishing"},
+  {title:"Output Whitelisting — Lollypop",client:"Lollypop Beatz",type:"Whitelisting",value:875,status:"Paid",start:"2026-03-20",deadline:"",notes:"YouTube whitelisting"},
+  {title:"Duetti Consulting",client:"",type:"Consulting",value:1050,status:"Invoiced",start:"2026-04-01",deadline:"",notes:"Open consulting retainer"},
+];
+
+const ROYALTY_CLIENTS=[
+  {name:"Simo Fre",pro:"BMI",ipi:"1097138831",bmi:4200,ascap:0,sx:800,lastPaid:"Jan 2026"},
+  {name:"TJ Rivers",pro:"BMI",ipi:"01278751316",bmi:3500,ascap:0,sx:600,lastPaid:"Jan 2026"},
+  {name:"Baso",pro:"SIAE",ipi:"1-006788848-4",bmi:0,ascap:0,sx:400,lastPaid:"Oct 2025"},
+  {name:"Lollypop Beatz",pro:"BMI",ipi:"1114289575",bmi:1600,ascap:0,sx:350,lastPaid:"Feb 2026"},
+  {name:"Nessuno",pro:"ASCAP",ipi:"1200598974",bmi:0,ascap:900,sx:200,lastPaid:"Jan 2026"},
+  {name:"EJ Grimes",pro:"ASCAP",ipi:"00851592226",bmi:0,ascap:780,sx:180,lastPaid:"Sep 2025"},
+  {name:"2Side",pro:"BMI",ipi:"886143114",bmi:500,ascap:0,sx:300,lastPaid:"Mar 2026"},
+  {name:"Season",pro:"ASCAP",ipi:"1238410868",bmi:0,ascap:1050,sx:250,lastPaid:"Jan 2026"},
+  {name:"ChillSesh",pro:"BMI",ipi:"01148109567",bmi:350,ascap:0,sx:120,lastPaid:"Mar 2026"},
+  {name:"DamnPablo",pro:"BMI",ipi:"01191465645",bmi:280,ascap:0,sx:90,lastPaid:"Mar 2026"},
+  {name:"Keep",pro:"BMI",ipi:"1230010149",bmi:200,ascap:0,sx:80,lastPaid:"Feb 2026"},
+];
+
+const MGMT_CLIENTS=[
+  {id:"hardbody-beazy",name:"Hardbody B-Eazy",legal:"Jackie Lane Plant Jr",coManager:null,commission:20,pro:"ASCAP",ipi:"781506041",email:"hardbodymuzik225@gmail.com",phone:"225 401 9518",address:"3926 SW 47th Ct, Fort Lauderdale FL 33312",dob:"10/5/1988",type:"management"},
+  {id:"dj-trebble",name:"DJ Trebble",legal:"Noah W Davis",coManager:null,commission:20,pro:"BMI",ipi:"",email:"trbonthebeat@gmail.com",address:"16333 Columns Way Apt 7108, Baton Rouge, LA 70817",notes:"$2,000 loan at 20% interest",type:"management"},
+  {id:"ej-grimes",name:"EJ Grimes",legal:"Eric Louis Grimes Jr",coManager:null,commission:20,pro:"ASCAP",ipi:"00851592226",email:"ejgrimesmusic@gmail.com",phone:"(318) 501-0644",address:"339 Riley Rd. Pioneer, LA 71266",dob:"7/4/2001",type:"management"},
+  {id:"lollypop-beatz",name:"Lollypop Beatz",legal:"Lauren Abramson",coManager:"Juss",commission:20,pro:"BMI",ipi:"1114289575",email:"Lollypopbeatz@gmail.com",address:"The Copse, Mountway, Potters Bar Herts EN6 1EP, UK",type:"management"},
+  {id:"44-wxrld",name:"44 WXRLD",legal:"",coManager:null,commission:20,pro:"",ipi:"",type:"management"},
+  {id:"hype-beatz",name:"Hype Beatz",legal:"Gerard Jacob",coManager:null,commission:20,pro:"BMI",ipi:"550586265",email:"Officialhypebeatz@gmail.com",address:"9357 Fontainebleau Blvd D414 Miami, FL 33172",type:"management"},
+  {id:"damnpablo",name:"DamnPablo",legal:"Pablo Valles Buigues",coManager:null,commission:20,pro:"BMI",ipi:"01191465645",email:"pablovallessb@gmail.com",address:"C/ Benissa 14, pta 9. Teulada, 03725 Alicante, Spain",type:"management"},
+  {id:"hardbody-heero",name:"Hardbody Heero",legal:"T Money",coManager:null,commission:20,pro:"",ipi:"",type:"management"},
+  {id:"simo-fre",name:"Simo Fre",legal:"Simone Di Franco",coManager:null,commission:15,pro:"BMI",ipi:"1097138831",email:"Simofrebeats@gmail.com",address:"Via Emilio Salgari, 5, 20900 Monza MB, Italy",dob:"02-16-2003",banking:{bank:"Intesa Sanpaolo",iban:"IT90H0306920442100000002468",swift:"BCITITMM"},bankingUS:{bank:"Citibank",routing:"031100209",account:"70582580001052897"},type:"management"},
+  {id:"2side",name:"2Side",legal:"Christopher Murphy",coManager:"Alex",commission:20,pro:"BMI",ipi:"886143114",email:"beats.2side@gmail.com",phone:"770-539-2855",address:"2651 E Lafayette St. Detroit, MI APT #6, 48207",type:"management"},
+  {id:"kilo",name:"Kilo",legal:"",coManager:"Alex",commission:20,pro:"",ipi:"",type:"management"},
+  {id:"aydin",name:"Aydin",legal:"Aydin Shahmari",coManager:null,commission:0,pro:"BMI",ipi:"01192454450",notes:"IBAN: DE08790400470423126200 SWIFT: COBADEFFXXX",type:"management"},
+  {id:"conz",name:"CONZ",legal:"Connor Halstead",coManager:"Kai",commission:0,pro:"BMI",ipi:"01283345939",type:"management"},
+  {id:"terps",name:"TERPS",legal:"",coManager:"Kai",commission:0,pro:"",ipi:"",type:"management"},
+  {id:"nessuno",name:"Nessuno",legal:"Nicolò Pevere",coManager:null,commission:0,pro:"ASCAP",ipi:"1200598974",email:"nessuno.prod@gmail.com",address:"Via Trieste 1 Valdagno 36078 Italy",type:"management"},
+  {id:"prod-baso",name:"Prod Baso",legal:"Francesco Basato",coManager:null,commission:0,pro:"SIAE",ipi:"1-006788848-4",email:"prodbybaso@gmail.com",address:"Via Olmo 29, Maerne 30030, Venice, Italy",type:"management"},
+  {id:"tj-rivers",name:"TJ RIVERS",legal:"Terron A. Rivers Jr.",coManager:"Kai",commission:0,pro:"BMI",ipi:"01278751316",type:"management"},
+];
+
+const PUB_CLIENTS=[
+  {id:"tj-rivers-pub",name:"tjriverss",legal:"Terron A. Rivers Jr.",pro:"BMI",writerIpi:"01278751316",pubIpi:"01161472475",contract:true,scheduleA:true},
+  {id:"conz-pub",name:"Conz",legal:"Connor Halstead",pro:"ASCAP",writerIpi:"01283345939",pubIpi:"1290381848",contract:true,scheduleA:true},
+  {id:"madebyjarel",name:"Madebyjarel",legal:"Sazhin Yaroslav Andreevich",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:true,notes:"Buyout"},
+  {id:"will-rhead",name:"Will Rhead",legal:"William Rhead",pro:"PRS",writerIpi:"1262357361",pubIpi:"",contract:true,scheduleA:true,notes:"Single Song"},
+  {id:"aywhat",name:"Aywhat",legal:"Salah Nizami",pro:"BMI",writerIpi:"01254792923",pubIpi:"",contract:true,scheduleA:true},
+  {id:"morgan",name:"Morgan",legal:"Elahie Wildman-Brown",pro:"BMI",writerIpi:"1156733450",pubIpi:"",contract:true,scheduleA:true,notes:"Single Song"},
+  {id:"elxnce",name:"Elxnce",legal:"Logan Cartwright",pro:"BMI",writerIpi:"01186986491",pubIpi:"",contract:true,scheduleA:true},
+  {id:"condo",name:"Condo",legal:"Marvin Lawrence Alexander III",pro:"BMI",writerIpi:"01024681874",pubIpi:"",contract:true,scheduleA:true},
+  {id:"keep",name:"Keep",legal:"Konstantin Pepelov",pro:"BMI",writerIpi:"1230010149",pubIpi:"",contract:true,scheduleA:true},
+  {id:"season",name:"Season",legal:"Maksim Iakovlev",pro:"ASCAP",writerIpi:"1238410868",pubIpi:"1326170576",contract:true,scheduleA:true},
+  {id:"lollypop-pub",name:"Lollypopbeatz",legal:"Lauren Abramson",pro:"BMI",writerIpi:"1114289575",pubIpi:"01161472475",contract:true,scheduleA:true},
+  {id:"simo-pub",name:"Simo Fre",legal:"Simone Di Franco",pro:"BMI",writerIpi:"1097138831",pubIpi:"01161472475",contract:true,scheduleA:true},
+  {id:"gael",name:"Gael Georges",legal:"Gael Georges",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:true},
+  {id:"stunna",name:"Stunna Ken",legal:"",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:true},
+  {id:"lil-criiz",name:"Lil Criiz",legal:"Christopher Baskin",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:true},
+  {id:"miche2x",name:"Miche2x",legal:"Allessandro Michelon",pro:"SIAE",writerIpi:"1158552737",pubIpi:"",contract:true,scheduleA:true},
+  {id:"nessuno-pub",name:"Nessuno",legal:"Nicolò Pevere",pro:"ASCAP",writerIpi:"1200598974",pubIpi:"1264400483",contract:true,scheduleA:true},
+  {id:"baso-pub",name:"Baso",legal:"Francesco Basato",pro:"SIAE",writerIpi:"1-006788848-4",pubIpi:"",contract:true,scheduleA:true},
+  {id:"fnf-chop",name:"FNF Chop",legal:"Deonte Gaines",pro:"BMI",writerIpi:"390426853",pubIpi:"",contract:true,scheduleA:true},
+  {id:"vai",name:"Vai",legal:"Mikołaj Burdan",pro:"BMI",writerIpi:"01265189335",pubIpi:"",contract:true,scheduleA:true},
+  {id:"fany808",name:"Fany808",legal:"",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:true},
+  {id:"klimax",name:"Klimax",legal:"Jorrin Michael Mulhollan",pro:"BMI",writerIpi:"365558723",pubIpi:"",contract:true,scheduleA:true},
+  {id:"jacksonwh",name:"Jacksonwithheart",legal:"Jackson Kennedy Torregrossa",pro:"BMI",writerIpi:"1242945551",pubIpi:"",contract:true,scheduleA:true},
+  {id:"max-louis",name:"Max Louis",legal:"",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:true},
+  {id:"dj-jhonatan",name:"DJ Jhonatan",legal:"Jhonathan Julio Sencio",pro:"BMI",writerIpi:"01151858158",pubIpi:"",contract:true,scheduleA:true},
+  {id:"chillsesh",name:"ChillSesh",legal:"Boyan Tantchev",pro:"BMI",writerIpi:"01148109567",pubIpi:"",contract:true,scheduleA:true},
+  {id:"damnpablo-pub",name:"DamnPablo",legal:"Pablo Valles Buigues",pro:"BMI",writerIpi:"01191465645",pubIpi:"",contract:true,scheduleA:true},
+  {id:"mj-nichols",name:"MJ Nichols",legal:"Maxwell James Nichols",pro:"BMI",writerIpi:"710716474",pubIpi:"1186953607",contract:true,scheduleA:true},
+  {id:"lil-loaded",name:"Lil Loaded",legal:"Dashawn Maurice Robertson",pro:"BMI",writerIpi:"01317533559",pubIpi:"",contract:true,scheduleA:false},
+  {id:"hardbody-heero-pub",name:"Hardbody Heero",legal:"T Money",pro:"",writerIpi:"",pubIpi:"",contract:true,scheduleA:false},
+  {id:"prod-taz",name:"ProdbyTaz",legal:"Frantisek Sulc",pro:"BMI",writerIpi:"01237102495",pubIpi:"",contract:false,scheduleA:false},
+];
+
+// ===================== HELPERS =====================
+const FMT=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const COLORS=["av-denim","av-gold","av-auburn","av-dirty"];
+function avColor(n){let h=0;for(let c of n)h=((h<<5)-h)+c.charCodeAt(0);return COLORS[Math.abs(h)%COLORS.length]}
+function initials(n){return n.split(/\s+/).map(w=>w[0]||"").join("").toUpperCase().slice(0,2)}
+function proBadge(p){if(!p)return'<span class="badge badge-gray">—</span>';const cls={BMI:"badge-denim",ASCAP:"badge-gold",SIAE:"badge-dirty",PRS:"badge-auburn"}[p]||"badge-gray";return`<span class="badge ${cls}">${p}</span>`}
+function drow(k,v){if(!v)return"";return`<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v}</span></div>`}
+
+// ===================== STATS =====================
+function computeStats(){
+  let total=0,paid=0,unpaid=0;
+  INVOICES.forEach(i=>{if(i.currency==="USD"){total+=i.amount;if(i.paid)paid+=i.amount;else unpaid+=i.amount;}});
+  document.getElementById("stat-total").textContent=FMT(total);
+  document.getElementById("stat-paid").textContent=FMT(paid);
+  document.getElementById("stat-unpaid").textContent=FMT(unpaid);
+}
+
+// ===================== DASHBOARD =====================
+function renderDashInv(){
+  document.getElementById("dash-inv-list").innerHTML=INVOICES.slice(0,7).map(i=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px">${i.artist}</div><div style="font-size:9px;color:var(--text3)">${i.producer||"—"} · ${i.date}</div></div>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600">${i.currency==="EUR"?"€":"$"}${i.amount.toLocaleString()}</span>
+      <span class="badge ${i.paid?"badge-green":"badge-auburn"}">${i.paid?"Paid":"Open"}</span>
+    </div>`).join("")}
+
+function renderDashAlerts(){
+  const open=INVOICES.filter(i=>!i.paid&&i.currency==="USD");
+  const openTotal=open.reduce((s,i)=>s+i.amount,0);
+  document.getElementById("dash-alerts").innerHTML=`
+    <div class="alert-item"><div class="alert-dot dot-red"></div><div><div class="alert-text">Fortnite / TJ Rivers — $15,000 sync invoice open (MMM052026)</div><div class="alert-time">Largest open · May 2026</div></div></div>
+    <div class="alert-item"><div class="alert-dot dot-red"></div><div><div class="alert-text">${open.length} open invoices totalling ${FMT(openTotal)}</div><div class="alert-time">Outstanding · Collect</div></div></div>
+    <div class="alert-item"><div class="alert-dot dot-red"></div><div><div class="alert-text">DJ Trebble — $2,000 loan at 20% interest outstanding</div><div class="alert-time">Financial · Review</div></div></div>
+    <div class="alert-item"><div class="alert-dot dot-gold"></div><div><div class="alert-text">Fashion Forty (Simo Fre) — Still owe Simo balance</div><div class="alert-time">Invoice MMM021126</div></div></div>
+    <div class="alert-item"><div class="alert-dot dot-blue"></div><div><div class="alert-text">BMI Q1 distribution — $12,400 est. payout Q3 2026</div><div class="alert-time">Royalties</div></div></div>
+    <div class="alert-item"><div class="alert-dot dot-green"></div><div><div class="alert-text">Google Sheet connected — hit Sync Now to pull latest</div><div class="alert-time">System</div></div></div>`}
+
+function renderDashProducer(){
+  const map={};
+  INVOICES.forEach(i=>{if(i.currency!=="USD")return;const ps=i.producer.split(/[,\/]/).map(p=>p.trim()).filter(p=>p&&p.toLowerCase()!=="multiple");ps.forEach(p=>{if(!map[p])map[p]=0;map[p]+=i.amount/ps.length;});});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById("dash-producer-chart").innerHTML=sorted.map(([n,a])=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</div>
+      <div style="flex:1;background:var(--surface2);border-radius:2px;height:5px"><div style="background:var(--denim);height:5px;border-radius:2px;width:${Math.round(a/max*100)}%"></div></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--gold);width:70px;text-align:right">${FMT(a)}</div>
+    </div>`).join("")}
+
+function renderDashDeals(){
+  document.getElementById("dash-deals-preview").innerHTML=DEALS.filter(d=>!["Paid","Closed"].includes(d.status)).slice(0,4).map(d=>`
+    <div style="padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;flex:1;margin-right:8px">${d.title}</div>
+        <span class="badge ${d.status==="Paid"?"badge-green":d.status==="Invoiced"?"badge-denim":"badge-gold"}">${d.status}</span>
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-top:2px">${d.type} · ${FMT(d.value)}</div>
+    </div>`).join("")}
+
+// ===================== INVOICES =====================
+let invFilter="all";
+function setInvFilter(f,btn){invFilter=f;document.querySelectorAll("#section-invoices .filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filterInvoices();}
+function filterInvoices(){
+  const q=(document.getElementById("inv-search")?.value||"").toLowerCase();
+  let data=INVOICES.filter(i=>{
+    const m=(i.artist+i.producer+i.invNum+i.subject).toLowerCase().includes(q);if(!m)return false;
+    if(invFilter==="paid")return i.paid;if(invFilter==="unpaid")return!i.paid;
+    if(invFilter==="sync")return i.subject.toLowerCase().includes("sync");
+    if(invFilter==="pa")return i.subject.toUpperCase()==="PA";
+    if(invFilter==="sheet")return i.source==="sheet";return true;
+  });
+  let total=0;data.forEach(i=>{if(i.currency==="USD")total+=i.amount;});
+  document.getElementById("inv-count-label").textContent=data.length;
+  document.getElementById("inv-total-label").textContent=FMT(total)+" USD";
+  document.getElementById("inv-tbody").innerHTML=data.map(i=>`<tr>
+    <td style="color:var(--text3);font-size:10px;white-space:nowrap">${i.date}</td>
+    <td style="font-family:monospace;font-size:9px;color:var(--text3)">${i.invNum||"—"}</td>
+    <td><div class="td-name">${i.artist}</div></td>
+    <td style="font-size:10px;color:var(--text2)">${i.producer||"—"}</td>
+    <td><span class="badge badge-gray">${i.subject}</span></td>
+    <td style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:${i.paid?"var(--text)":"var(--auburn)"}">${i.currency==="EUR"?"€":"$"}${i.amount.toLocaleString()}</td>
+    <td><span class="badge ${i.paid?"badge-green":"badge-auburn"}">${i.paid?"Paid":"Open"}</span></td>
+    <td><span class="badge ${i.source==="sheet"?"badge-dirty":"badge-gray"}">${i.source==="sheet"?"Sheet":"Local"}</span></td>
+    <td style="font-size:9px;color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.notes||"—"}</td>
+  </tr>`).join("")}
+
+// ===================== GOOGLE SHEET SYNC =====================
+async function syncGSheet(){
+  const url=document.getElementById("gsheet-url").value.trim();
+  if(!url){setStatus("No URL","err");return;}
+  setStatus("Syncing...","pending");
+  try{
+    const res=await fetch(url);if(!res.ok)throw new Error();
+    const text=await res.text();
+    const lines=text.split("\n");if(lines.length<2){setStatus("No data","err");return;}
+    const headers=lines[0].split(",").map(h=>h.replace(/^"|"$/g,"").trim().toLowerCase());
+    let added=0,updated=0;
+    lines.slice(1).forEach(line=>{
+      if(!line.trim())return;
+      const vals=line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$)/g)||line.split(",");
+      const clean=vals.map(v=>(v||"").replace(/^"|"$/g,"").trim());
+      const obj={};headers.forEach((h,i)=>obj[h]=clean[i]||"");
+      const rawAmt=obj["$$$"]||obj["amount"]||obj["usd"]||"";
+      const amt=parseFloat(rawAmt.replace(/[^0-9.]/g,""))||0;
+      if(!amt||!obj["date"])return;
+      const isPaid=(obj["paid"]||"").toLowerCase()==="yes"||(obj["paid"]||"").toLowerCase()==="paid";
+      const invNum=obj["invoice #"]||obj["invoice#"]||obj["inv#"]||"";
+      const existing=INVOICES.find(i=>invNum&&i.invNum===invNum&&i.source==="local");
+      if(existing){existing.paid=isPaid;updated++;return;}
+      INVOICES.unshift({date:obj["date"]||"",artist:obj["artist"]||"",producer:obj["producer"]||"",subject:obj["subject"]||"PA",amount:amt,currency:"USD",invNum,paid:isPaid,source:"sheet",notes:"[Google Sheet]"});
+      added++;
+    });
+    computeStats();filterInvoices();renderDashInv();
+    setStatus(`✓ +${added} new · ${updated} updated`,"ok");
+  }catch(e){setStatus("Error — check URL","err");}
+}
+function setStatus(msg,cls){const el=document.getElementById("sync-status");el.textContent=msg;el.className="sync-status "+cls;}
+
+// ===================== ROYALTIES =====================
+function renderRoyaltyClients(){
+  document.getElementById("royalty-client-tbody").innerHTML=ROYALTY_CLIENTS.map(c=>{
+    const total=c.bmi+c.ascap+c.sx;
+    return`<tr><td><div class="td-name">${c.name}</div></td><td>${proBadge(c.pro)}</td><td style="font-family:monospace;font-size:9px;color:var(--text3)">${c.ipi}</td>
+    <td style="color:${c.bmi?"var(--gold)":"var(--text3)"};font-family:'Barlow Condensed',sans-serif;font-weight:600">${c.bmi?FMT(c.bmi):"—"}</td>
+    <td style="color:${c.ascap?"var(--gold)":"var(--text3)"};font-family:'Barlow Condensed',sans-serif;font-weight:600">${c.ascap?FMT(c.ascap):"—"}</td>
+    <td style="color:${c.sx?"var(--dirty)":"var(--text3)"};font-family:'Barlow Condensed',sans-serif;font-weight:600">${c.sx?FMT(c.sx):"—"}</td>
+    <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px">${FMT(total)}</td>
+    <td style="font-size:9px;color:var(--text3)">${c.lastPaid||"—"}</td></tr>`;}).join("")}
+
+function renderRoyaltyHistory(){
+  document.getElementById("royalty-history-tbody").innerHTML=ROYALTY_HISTORY.map(r=>{
+    const net=r.gross*(1-r.comm/100);
+    return`<tr><td style="font-size:10px;color:var(--text3)">${r.date}</td><td><div class="td-name">${r.client}</div></td>
+    <td>${proBadge(r.source==="BMI"?"BMI":r.source==="ASCAP"?"ASCAP":"")}<span style="font-size:9px;color:var(--text3);margin-left:4px">${r.source}</span></td>
+    <td style="font-size:10px;color:var(--text2)">${r.period}</td>
+    <td style="font-family:'Barlow Condensed',sans-serif;font-weight:600">${FMT(r.gross)}</td>
+    <td><span class="badge badge-gold">${r.comm}%</span></td>
+    <td style="font-family:'Barlow Condensed',sans-serif;font-weight:600;color:#4caf7a">${FMT(net)}</td>
+    <td><span class="badge ${r.paid?"badge-green":"badge-auburn"}">${r.paid?"Paid Out":"Pending"}</span></td></tr>`;}).join("")}
+
+function logRoyalty(){
+  const gross=parseFloat(document.getElementById("ry-gross").value)||0;
+  const comm=parseFloat(document.getElementById("ry-comm").value)||20;
+  ROYALTY_HISTORY.unshift({date:document.getElementById("ry-date").value,client:document.getElementById("ry-client").value,source:document.getElementById("ry-source").value,period:document.getElementById("ry-period").value,gross,comm,paid:false});
+  renderRoyaltyHistory();
+  alert("Royalty logged.");}
+
+// ===================== DEALS =====================
+function renderDealsActive(){
+  document.getElementById("deals-active-list").innerHTML=DEALS.map(d=>{
+    const statusCls={Paid:"badge-green",Invoiced:"badge-denim",Signed:"badge-dirty",Negotiating:"badge-gold","Sent for Signature":"badge-gold"}[d.status]||"badge-gray";
+    const pct=d.status==="Paid"?100:d.status==="Invoiced"?75:d.status==="Signed"?50:d.status==="Sent for Signature"?30:10;
+    return`<div class="deal-card">
+      <div class="deal-header">
+        <div><div class="deal-title">${d.title}</div><div class="deal-meta">${d.client||"—"} · ${d.type} · ${d.start}</div></div>
+        <div style="text-align:right"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:var(--gold)">${FMT(d.value)}</div><span class="badge ${statusCls}" style="margin-top:4px;display:inline-block">${d.status}</span></div>
+      </div>
+      ${d.notes?`<div style="font-size:10px;color:var(--text3);margin-bottom:8px">${d.notes}</div>`:""}
+      <div class="deal-tags"><span class="badge badge-gray">${d.type}</span>${d.deadline?`<span class="badge badge-auburn">Due: ${d.deadline}</span>`:""}</div>
+      <div class="deal-progress"><div class="deal-progress-label"><span>Progress</span><span>${pct}%</span></div>
+      <div class="deal-bar-wrap"><div class="deal-bar" style="width:${pct}%;background:${pct===100?"var(--green)":pct>=75?"var(--denim)":"var(--gold)"}"></div></div></div>
+    </div>`;}).join("")}
+
+function renderDealsPub(){
+  document.getElementById("deals-pub-tbody").innerHTML=PUB_CLIENTS.map(c=>`<tr>
+    <td><div class="td-name">${c.name}</div></td><td style="font-size:10px;color:var(--text2)">${c.legal||"—"}</td>
+    <td>${proBadge(c.pro||"")}</td><td style="font-size:9px;color:var(--text3)">MMM ${c.pro==="ASCAP"?"PubSongs":"Publishing"} Worldwide</td>
+    <td style="font-family:monospace;font-size:9px;color:var(--text3)">${c.writerIpi||"—"}</td>
+    <td><span class="badge ${c.contract?"badge-denim":"badge-auburn"}">${c.contract?"On File":"Missing"}</span></td>
+    <td><span class="badge ${c.scheduleA?"badge-gold":"badge-gray"}">${c.scheduleA?"On File":"—"}</span></td>
+  </tr>`).join("")}
+
+function renderDealsClosed(){
+  document.getElementById("deals-closed-tbody").innerHTML=INVOICES.filter(i=>i.paid&&["Sync","Sync License"].includes(i.subject)).map(i=>`<tr>
+    <td style="font-size:10px;color:var(--text3)">${i.date}</td><td><div class="td-name">${i.artist}</div></td>
+    <td style="font-size:10px;color:var(--text2)">${i.subject} — ${i.producer}</td>
+    <td style="font-family:'Barlow Condensed',sans-serif;font-weight:600;color:#4caf7a">${FMT(i.amount)}</td>
+    <td style="font-family:monospace;font-size:9px;color:var(--text3)">${i.invNum||"—"}</td>
+  </tr>`).join("")}
+
+function addDeal(){
+  DEALS.unshift({title:document.getElementById("deal-title").value||"New Deal",client:document.getElementById("deal-client").value,type:document.getElementById("deal-type").value,value:parseFloat(document.getElementById("deal-value").value)||0,status:document.getElementById("deal-status").value,start:document.getElementById("deal-start").value,deadline:document.getElementById("deal-deadline").value,notes:document.getElementById("deal-notes").value});
+  document.getElementById("stat-deals").textContent=DEALS.length;
+  renderDealsActive();switchTab("deals","active",document.querySelector("#section-deals .tab-bar .tab-btn"));}
+
+// ===================== CLIENTS =====================
+let clientFilter="all";
+function setFilter(f,btn){clientFilter=f;document.querySelectorAll("#section-clients .filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filterClients();}
+function filterClients(){
+  const q=(document.getElementById("client-search")?.value||"").toLowerCase();
+  let data=[];
+  if(clientFilter!=="publishing")data=[...MGMT_CLIENTS];
+  if(clientFilter!=="management")data=[...data,...PUB_CLIENTS];
+  if(q)data=data.filter(c=>(c.name+c.legal+c.pro+(c.coManager||"")).toLowerCase().includes(q));
+  document.getElementById("clients-tbody").innerHTML=data.map(c=>`<tr onclick="showDetail('${c.id}')">
+    <td><div class="td-name">${c.name}</div><div class="td-sub">${c.type==="management"?"Management":"Publishing"}</div></td>
+    <td style="font-size:10px;color:var(--text2)">${c.legal||"—"}</td>
+    <td>${proBadge(c.pro||"")}</td>
+    <td style="font-family:monospace;font-size:9px;color:var(--text3)">${c.ipi||c.writerIpi||"—"}</td>
+    <td><span class="badge ${c.type==="management"?"badge-denim":"badge-gold"}">${c.type==="management"?"Mgmt":"Pub"}</span></td>
+    <td style="font-size:10px;color:var(--text2)">${c.coManager||"—"}</td>
+    <td><span class="badge badge-gray">${c.commission!=null&&c.commission>0?c.commission+"%":"—"}</span></td>
+  </tr>`).join("")}
+
+function renderPub(){
+  document.getElementById("pub-tbody").innerHTML=PUB_CLIENTS.map(c=>`<tr onclick="showDetail('${c.id}')">
+    <td><div class="td-name">${c.name}</div></td><td style="font-size:10px;color:var(--text2)">${c.legal||"—"}</td>
+    <td>${proBadge(c.pro||"")}</td><td style="font-family:monospace;font-size:9px;color:var(--text3)">${c.writerIpi||"—"}</td>
+    <td style="font-family:monospace;font-size:9px;color:var(--text3)">${c.pubIpi||"—"}</td>
+    <td><span class="badge ${c.contract?"badge-denim":"badge-auburn"}">${c.contract?"On File":"Missing"}</span></td>
+    <td><span class="badge ${c.scheduleA?"badge-gold":"badge-gray"}">${c.scheduleA?"On File":"—"}</span></td>
+  </tr>`).join("")}
+
+function renderMgmt(){
+  document.getElementById("mgmt-tbody").innerHTML=MGMT_CLIENTS.map(c=>`<tr onclick="showDetail('${c.id}')">
+    <td><div class="td-name">${c.name}</div></td><td style="font-size:10px;color:var(--text2)">${c.legal||"—"}</td>
+    <td style="font-size:10px;color:var(--text2)">${c.coManager||"—"}</td>
+    <td><span class="badge badge-gold">${c.commission?c.commission+"%":"—"}</span></td>
+    <td>${proBadge(c.pro||"")}</td><td style="font-size:9px;color:var(--text3)">${c.email||"—"}</td>
+    <td style="font-size:9px;color:var(--text3)">${c.address?c.address.split(",").pop().trim():"—"}</td>
+  </tr>`).join("")}
+
+// ===================== DETAIL =====================
+let prevSec="dashboard";
+function showDetail(id){
+  prevSec=document.querySelector(".section.active").id.replace("section-","");
+  const c=[...MGMT_CLIENTS,...PUB_CLIENTS].find(x=>x.id===id);if(!c)return;
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("section-detail").classList.add("active");
+  const av=avColor(c.name);
+  const clientInvs=INVOICES.filter(i=>{const n=c.name.toLowerCase();return i.producer.toLowerCase().includes(n)||i.artist.toLowerCase().includes(n);}).slice(0,6);
+  const clientTotal=clientInvs.filter(i=>i.currency==="USD").reduce((s,i)=>s+i.amount,0);
+  document.getElementById("detail-content").innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">
+      <div class="avatar ${av}" style="width:52px;height:52px;font-size:16px;border-radius:6px">${initials(c.name)}</div>
+      <div><div class="client-name-lg">${c.name}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${c.legal||"No legal name on file"}</div>
+      <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">${proBadge(c.pro||"")}${c.type?`<span class="badge ${c.type==="management"?"badge-denim":"badge-gold"}">${c.type==="management"?"Management":"Publishing"}</span>`:""}${c.commission?`<span class="badge badge-gold">${c.commission}%</span>`:""}${c.coManager?`<span class="badge badge-dirty">Co-mgr: ${c.coManager}</span>`:""}</div></div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-card"><div class="detail-card-title">Identity & PRO</div>${drow("Legal",c.legal)}${drow("PRO",c.pro)}${drow("Writer IPI",c.ipi||c.writerIpi)}${drow("Pub IPI",c.pubIpi||"")}${drow("DOB",c.dob)}</div>
+      <div class="detail-card"><div class="detail-card-title">Contact</div>${drow("Email",c.email)}${drow("Phone",c.phone)}${drow("Address",c.address)}${drow("Notes",c.notes)}</div>
+      <div class="detail-card"><div class="detail-card-title">${c.banking?"Banking":"Management"}</div>
+        ${c.banking?drow("Bank",c.banking.bank)+drow("IBAN",c.banking.iban)+drow("SWIFT",c.banking.swift):""}
+        ${c.bankingUS?drow("US Bank",c.bankingUS.bank)+drow("Routing",c.bankingUS.routing)+drow("Acct",c.bankingUS.account):""}
+        ${!c.banking?drow("Co-Mgr",c.coManager)+drow("Commission",c.commission?c.commission+"%":null):""}
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">Invoice History <span style="color:var(--gold);font-size:10px">${FMT(clientTotal)} total</span></div>
+      ${clientInvs.length?clientInvs.map(i=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1"><div style="font-size:12px;font-weight:500">${i.artist}</div><div style="font-size:9px;color:var(--text3)">${i.date} · ${i.subject}</div></div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px">${i.currency==="EUR"?"€":"$"}${i.amount.toLocaleString()}</div>
+        <span class="badge ${i.paid?"badge-green":"badge-auburn"}">${i.paid?"Paid":"Open"}</span>
+      </div>`).join(""):"<div style=\"color:var(--text3);font-size:11px;padding:8px 0\">No invoices found</div>"}
+    </div>`}
+
+function goBack(){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("section-"+prevSec).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b=>{b.classList.remove("active");if(b.getAttribute("onclick")&&b.getAttribute("onclick").includes("'"+prevSec+"'"))b.classList.add("active");});}
+
+// ===================== INVOICE FORM =====================
+function autoFillProducer(){const v=document.getElementById("inv-artist").value;if(v)document.getElementById("inv-producer").value=v;}
+function renderQuickFill(){
+  const el=document.getElementById("quick-fill-list");if(!el)return;
+  el.innerHTML=MGMT_CLIENTS.map(c=>`<div class="roster-item" onclick="quickFill('${c.id}')">
+    <div class="avatar ${avColor(c.name)}">${initials(c.name)}</div>
+    <div style="flex:1"><div class="roster-name">${c.name}</div><div class="roster-meta">${c.legal||"—"}</div></div>
+  </div>`).join("")}
+function quickFill(id){const c=MGMT_CLIENTS.find(x=>x.id===id);if(!c)return;document.getElementById("inv-artist").value=c.name;document.getElementById("inv-producer").value=c.name;}
+
+function generateInvoice(){
+  const dateRaw=document.getElementById("inv-date").value;
+  const date=dateRaw?new Date(dateRaw+"T12:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  const num=document.getElementById("inv-num").value||"MMM—";
+  const billTo=document.getElementById("inv-billto").value||"Client Name";
+  const billAddr=document.getElementById("inv-billaddr").value||"";
+  const producer=document.getElementById("inv-producer").value||document.getElementById("inv-artist").value||"";
+  const subject=document.getElementById("inv-subject").value||"PA";
+  const desc=document.getElementById("inv-desc").value||("Use of composition — "+producer);
+  const currency=document.getElementById("inv-currency").value;
+  const gross=parseFloat(document.getElementById("inv-gross").value)||0;
+  const rate=parseFloat(document.getElementById("inv-rate").value)||100;
+  const net=gross*rate/100;
+  const due=document.getElementById("inv-due").value||"Upon Receipt";
+  const sym=currency==="EUR"?"€":"$";
+  document.getElementById("invoice-preview-area").innerHTML=`
+  <div class="inv-preview" id="inv-preview-box">
+    <div style="text-align:center;margin-bottom:16px"><div style="width:50px;height:50px;border-radius:50%;background:#000;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;letter-spacing:1px">M</div></div>
+    <div class="inv-header">
+      <div><div class="inv-company">FB Projects LLC</div><div style="font-size:10px;color:#555;margin-top:2px">200 Biscayne Blvd. Way #3213<br>Miami, FL 33131</div></div>
+      <div style="text-align:right"><div class="inv-title">INVOICE</div><table style="font-size:10px;color:#555;margin-top:4px;margin-left:auto"><tr><td style="padding:1px 8px 1px 0">DATE</td><td>${date}</td></tr><tr><td style="padding:1px 8px 1px 0">INVOICE #</td><td>${num}</td></tr><tr><td style="padding:1px 8px 1px 0">DUE DATE</td><td>${due}</td></tr></table></div>
+    </div>
+    <div style="margin-bottom:16px"><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#666;margin-bottom:3px">Bill To</div><div style="font-weight:700;font-size:12px">${billTo}</div>${billAddr?`<div style="font-size:10px;color:#555;margin-top:1px">${billAddr}</div>`:""}</div>
+    <table class="inv-table"><thead><tr><th>Description</th><th>Gross</th><th>Spot Rate</th><th style="text-align:right">${currency}</th></tr></thead>
+    <tbody><tr><td>${desc}${producer?" ("+producer+")":""}</td><td>${sym}${gross.toLocaleString("en-US",{minimumFractionDigits:2})}</td><td>${rate}%</td><td style="text-align:right">${sym}${net.toLocaleString("en-US",{minimumFractionDigits:2})}</td></tr></tbody></table>
+    <div class="inv-total-row"><span>Total Due ${currency}</span><span>${sym}${net.toLocaleString("en-US",{minimumFractionDigits:2})}</span></div>
+    <div class="inv-banking"><strong style="display:block;margin-bottom:4px;font-size:11px">ACH Direct Deposit Details</strong>
+    FB Projects LLC — Chase Bank Account #: 601388769 — Routing #: 267084131<br>
+    Bank Address: 1401 Ponce De Leon Blvd, Coral Gables, FL 33146 — IBAN/Swift: CHASUS33<br><br>
+    <strong>Paypal:</strong> mike@miamimusicmanagement.com &nbsp; <strong>Zelle:</strong> MiamiMusicMGMT@gmail.com &nbsp; <strong>Phone:</strong> 1-516-320-0593</div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="action-btn gold" onclick="printInv()">Print / Save as PDF</button>
+    <button class="action-btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('inv-num').value)">Copy Invoice #</button>
+  </div>`;
+  INVOICES.unshift({date:new Date().toISOString().slice(0,10),artist:billTo,producer,subject,amount:net,currency,invNum:num,paid:false,source:"local",notes:document.getElementById("inv-notes").value});
+  computeStats();
+  document.getElementById("invoice-preview-area").scrollIntoView({behavior:"smooth"});}
+
+function printInv(){
+  const c=document.getElementById("inv-preview-box");if(!c)return;
+  const w=window.open("","_blank");
+  w.document.write('<html><head><title>Invoice</title><style>body{font-family:Arial,sans-serif;padding:40px;font-size:12px}table{width:100%;border-collapse:collapse}th{background:#000;color:#fff;padding:7px}td{padding:7px;border-bottom:1px solid #eee}</style></head><body>'+c.innerHTML+"</body></html>");
+  w.document.close();w.print();}
+
+// ===================== EXPORTS =====================
+function exportCSV(){
+  const h=["Name","Legal","Type","PRO","IPI","Manager","Commission","Email"];
+  const d=[...MGMT_CLIENTS,...PUB_CLIENTS].map(c=>[c.name,c.legal||"",c.type||"publishing",c.pro||"",c.ipi||c.writerIpi||"",c.coManager||"",c.commission||"",c.email||""]);
+  dl([h,...d],"MMM_Roster.csv");}
+function exportInvCSV(){
+  const h=["Date","Invoice #","Artist","Producer","Subject","Amount","Currency","Paid","Source","Notes"];
+  const d=INVOICES.map(i=>[i.date,i.invNum,i.artist,i.producer,i.subject,i.amount,i.currency,i.paid?"Yes":"No",i.source,i.notes]);
+  dl([h,...d],"MMM_Invoices.csv");}
+function dl(rows,fname){
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const a=document.createElement("a");a.href="data:text/csv,"+encodeURIComponent(csv);a.download=fname;a.click();}
+
+// ===================== TABS =====================
+function switchTab(section,tab,btn){
+  document.querySelectorAll(`#section-${section} .tab-content`).forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(`#section-${section} .tab-btn`).forEach(b=>b.classList.remove("active"));
+  const el=document.getElementById(`${section}-${tab}`);if(el)el.classList.add("active");
+  if(btn)btn.classList.add("active");}
+
+// ===================== AI =====================
+let apiKey="";
+function saveKey(){apiKey=document.getElementById("api-key-input").value.trim();if(apiKey)alert("API key saved for this session.");}
+
+const ROSTER_CTX=`You are the AI assistant for Miami Music Management (MMM). Context:
+MANAGEMENT (17): Hardbody B-Eazy (20%,ASCAP 781506041,Fort Lauderdale), DJ Trebble (20%,BMI,$2k loan), EJ Grimes (20%,ASCAP 00851592226), Lollypop Beatz (20%,BMI 1114289575,co-Juss,UK), 44 WXRLD (20%), Hype Beatz (20%,BMI 550586265,Miami), DamnPablo (20%,BMI 01191465645,Spain), Hardbody Heero (20%), Simo Fre (15%,BMI 1097138831,Italy,US Citibank routing 031100209 acct 70582580001052897), 2Side (20%,BMI 886143114,co-Alex,Detroit), Kilo (20%,co-Alex), Aydin (BMI 01192454450,IBAN DE08790400470423126200), CONZ (BMI 01283345939,co-Kai), TERPS (co-Kai), Nessuno (ASCAP 1200598974,Italy,pub IPI 1264400483), Prod Baso (SIAE 1-006788848-4,Venice), TJ RIVERS (BMI 01278751316,co-Kai).
+PUBLISHING: MMM Publishing Worldwide BMI IPI 01161472475 / MMM PubSongs Worldwide ASCAP IPI 1290381848. 31 clients.
+INVOICES 2026: Fredo Bang $22,650 paid, Fortnite/TJ Rivers $15,000 sync OPEN, H3adband $7,500 paid, Fredo Bang $6,250 paid, Empire/2Side $5,066 paid, NBA YB multiple $4,750 paid, NBA YB/Baso $4,000 paid, Tony Boy/Baso €3,000 paid, NBA YB/Simo+Nessuno $2,250 paid, Summrs/Jackson $2,000 paid, 1900Rugrat/TJ Rivers $2,000 paid.
+OPEN invoices: Fortnite $15,000, P Yungin $1,600, Hunxho $1,500, Loe Shimmy/Simo $1,500, DeeBaby $750, Duetti consulting $1,050, Billacheck $625, FCG Heem/Simo $750, Warhol/Terps $500, Kenny Muney/Fany808 $200, NBA YB/Season sync $150. Total ~$22,125 open.
+ROYALTIES est: BMI $12,400, ASCAP $6,230, SoundExchange $4,100, MLC $2,100.
+COMPANY: FB Projects LLC, 200 Biscayne Blvd Way #3213 Miami FL 33131. Chase acct 601388769 routing 267084131. PayPal: mike@miamimusicmanagement.com. Zelle: MiamiMusicMGMT@gmail.com.`;
+
+const chatHistory=[];
+async function sendMsg(){
+  if(!apiKey){alert("Please enter your Anthropic API key above first.");return;}
+  const input=document.getElementById("chat-input");const msg=input.value.trim();if(!msg)return;
+  input.value="";appendMsg("user",msg);chatHistory.push({role:"user",content:msg});
+  const btn=document.getElementById("send-btn");btn.disabled=true;btn.textContent="...";
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:ROSTER_CTX,messages:chatHistory})});
+    const data=await res.json();
+    const reply=data.content?.find(b=>b.type==="text")?.text||data.error?.message||"No response.";
+    appendMsg("ai",reply);chatHistory.push({role:"assistant",content:reply});
+  }catch(e){appendMsg("ai","Error: "+e.message);}
+  btn.disabled=false;btn.textContent="Send";}
+
+function appendMsg(role,text){
+  const el=document.getElementById("chat-messages");const div=document.createElement("div");
+  div.innerHTML=`<div class="msg-label">${role==="user"?"You":"MMM AI"}</div><div class="msg msg-${role}">${text.replace(/\n/g,"<br>")}</div>`;
+  el.appendChild(div);el.scrollTop=el.scrollHeight;}
+function quickAsk(q){document.getElementById("chat-input").value=q;sendMsg();}
+function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}
+
+// ===================== NAV =====================
+function nav(id,btn){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("section-"+id).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  if(id==="new-invoice")renderQuickFill();
+  if(id==="clients")filterClients();
+  if(id==="publishing")renderPub();
+  if(id==="management")renderMgmt();
+  if(id==="royalties"){renderRoyaltyClients();renderRoyaltyHistory();}
+  if(id==="deals"){renderDealsActive();renderDealsPub();renderDealsClosed();}
+}
+
+// ===================== INIT =====================
+computeStats();
+renderDashInv();
+renderDashAlerts();
+renderDashProducer();
+renderDashDeals();
+filterInvoices();
+filterClients();
+document.getElementById("inv-date").value=new Date().toISOString().slice(0,10);
+document.getElementById("ry-date").value=new Date().toISOString().slice(0,10);
+document.getElementById("deal-start").value=new Date().toISOString().slice(0,10);
+setTimeout(syncGSheet,1000);
+</script>
+</body>
+</html>
