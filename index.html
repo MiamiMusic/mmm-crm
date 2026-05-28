@@ -203,6 +203,9 @@ select.form-input option{background:var(--surface2)}
     </div>
     <button class="action-btn" id="signin-btn" style="width:100%;padding:11px;font-size:12px;letter-spacing:2px" onclick="signIn()">Sign In</button>
     <div class="auth-error" id="auth-error"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="forgotPassword()" style="background:none;border:none;color:var(--text3);font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer">Forgot password?</button>
+    </div>
   </div>
 </div>
 <div class="app" id="app" style="display:none">
@@ -1981,6 +1984,15 @@ async function signIn(){
   const{error}=await sb.auth.signInWithPassword({email,password});
   btn.textContent='Sign In';btn.disabled=false;
   if(error)errEl.textContent=error.message;
+}
+
+async function forgotPassword(){
+  const email=document.getElementById('auth-email').value.trim();
+  const errEl=document.getElementById('auth-error');
+  if(!email){errEl.textContent='Enter your email above first.';errEl.style.color='var(--gold)';return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://mmm-crm.netlify.app'});
+  if(error){errEl.textContent=error.message;errEl.style.color='#c0514a';}
+  else{errEl.textContent='Password reset email sent — check your inbox.';errEl.style.color='#4caf7a';}
 }
 
 async function signOut(){
