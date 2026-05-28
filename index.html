@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MMM CRM v5 — Miami Music Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--black:#080808;--denim:#336A92;--gold:#93812F;--auburn:#8A271E;--dirty:#3F8594;--green:#2a7a4a;--purple:#6b3fa0;--surface:#111;--surface2:#1a1a1a;--surface3:#222;--border:#2a2a2a;--text:#f0f0f0;--text2:#a0a0a0;--text3:#606060}
@@ -203,8 +204,12 @@ select.form-input option{background:var(--surface2)}
   <button class="nav-btn" onclick="nav('sops',this)">SOPs</button>
   <div class="nav-sep"></div>
   <button class="nav-btn" onclick="nav('ai',this)">AI</button>
-  <div class="nav-right">FB Projects LLC · Miami</div>
+  <div class="nav-right">
+    <span id="user-badge" onclick="promptUser()" style="cursor:pointer;color:var(--denim);margin-right:8px" title="Click to set your name">${localStorage.getItem('mmm_user')||'Set Name'}</span>
+    FB Projects LLC · Miami
+  </div>
 </nav>
+<div id="sync-banner" style="display:none;position:fixed;bottom:16px;right:16px;padding:10px 18px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1px;color:#fff;z-index:999;transition:all .3s"></div>
 <div class="main">
 
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
@@ -1920,6 +1925,370 @@ function addToTracker(){
 }
 
 // ============================================================
+// SUPABASE — Real-time shared database
+// ============================================================
+function promptUser(){
+  const name=prompt("Enter your name (Mike, Kai, Juss, Alex, Sheldon, or Brooke):",currentUser||'');
+  if(name)setUser(name.trim());
+}
+const SUPABASE_URL = 'https://honyobysbyhxaqmgduuc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvbnlvYnlzYnloeGFxbWdkdXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDExNzIsImV4cCI6MjA5NTU3NzE3Mn0.dFIkse3ALuqX8NHzs2lAwi_FU5Qq1rho-pqnS4_C4eI';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Who is using this session
+let currentUser = localStorage.getItem('mmm_user') || '';
+function setUser(name){ currentUser=name; localStorage.setItem('mmm_user',name); document.getElementById('user-badge').textContent=name||'Set Name'; }
+
+// ── SYNC STATUS BANNER ──
+function showSyncBanner(msg, type='ok'){
+  const b=document.getElementById('sync-banner');
+  if(!b)return;
+  b.textContent=msg;
+  b.style.background=type==='ok'?'rgba(42,122,74,.9)':type==='err'?'rgba(138,39,30,.9)':'rgba(51,106,146,.9)';
+  b.style.display='block';
+  setTimeout(()=>b.style.display='none', 3000);
+}
+
+// ── INVOICES ──
+async function sbLoadInvoices(){
+  const {data,error}=await sb.from('invoices').select('*').order('date',{ascending:false});
+  if(error){console.error('Invoice load error',error);return;}
+  if(data&&data.length){
+    // Merge DB invoices with local static ones — DB takes priority by inv_num
+    data.forEach(row=>{
+      const mapped={date:row.date,artist:row.artist,producer:row.producer,subject:row.subject,
+        amount:parseFloat(row.amount),currency:row.currency||'USD',invNum:row.inv_num,
+        paid:row.paid,source:'db',notes:row.notes||'',dbId:row.id,createdBy:row.created_by};
+      const existing=INVOICES.findIndex(i=>i.invNum&&i.invNum===row.inv_num&&i.invNum!=='');
+      if(existing>=0)INVOICES[existing]=mapped;
+      else INVOICES.unshift(mapped);
+    });
+    computeStats();filterInvoices();renderDashInv();
+  }
+}
+
+async function sbSaveInvoice(inv){
+  const {data,error}=await sb.from('invoices').insert([{
+    date:inv.date, artist:inv.artist, producer:inv.producer, subject:inv.subject,
+    amount:inv.amount, currency:inv.currency, inv_num:inv.invNum,
+    paid:inv.paid, notes:inv.notes||'', created_by:currentUser||'unknown'
+  }]).select();
+  if(error){console.error('Invoice save error',error);showSyncBanner('Save failed — check connection','err');return null;}
+  showSyncBanner('Invoice saved & synced ✓');
+  return data?.[0];
+}
+
+async function sbToggleInvoicePaid(invNum, paid){
+  const {error}=await sb.from('invoices').update({paid}).eq('inv_num',invNum);
+  if(error)console.error('Toggle paid error',error);
+  else showSyncBanner(`Invoice ${invNum} marked ${paid?'Paid':'Open'} ✓`);
+}
+
+// ── TODOS ──
+async function sbLoadTodos(){
+  const {data,error}=await sb.from('todos').select('*').is('client_id',null).order('created_at',{ascending:false});
+  if(error){console.error('Todo load error',error);return;}
+  if(data&&data.length){
+    todos=data.map(row=>({id:row.id,text:row.text,cat:row.cat,pri:row.pri,
+      assigned:row.assigned,due:row.due,done:row.done,
+      created:row.created_at?.slice(0,10),dbId:row.id}));
+    renderTodos();updateTodoCount();renderDashTodo();
+  }
+}
+
+async function sbAddTodo(todo){
+  const {data,error}=await sb.from('todos').insert([{
+    text:todo.text, cat:todo.cat, pri:todo.pri, assigned:todo.assigned||'',
+    due:todo.due||'', done:false, created_by:currentUser||'unknown', client_id:null
+  }]).select();
+  if(error){console.error('Todo save error',error);showSyncBanner('Save failed','err');return;}
+  if(data?.[0]){todo.id=data[0].id;todo.dbId=data[0].id;}
+  showSyncBanner('Task added ✓');
+}
+
+async function sbToggleTodo(id, done){
+  await sb.from('todos').update({done}).eq('id',id);
+}
+
+async function sbDeleteTodo(id){
+  await sb.from('todos').delete().eq('id',id);
+}
+
+// ── STUDIO BOOKINGS ──
+async function sbLoadBookings(){
+  const {data,error}=await sb.from('studio_bookings').select('*').order('date',{ascending:false});
+  if(error){console.error('Booking load error',error);return;}
+  if(data&&data.length){
+    STUDIO_BOOKINGS.length=0;
+    data.forEach(row=>STUDIO_BOOKINGS.push({id:row.id,client:row.client,date:row.date,
+      time:row.time,hours:parseFloat(row.hours),rate:parseFloat(row.rate),
+      total:parseFloat(row.total),engineer:row.engineer,paid:row.paid,notes:row.notes,dbId:row.id}));
+    renderStudioStats();renderBookingsTable();
+  }
+}
+
+async function sbSaveBooking(b){
+  const {data,error}=await sb.from('studio_bookings').insert([{
+    client:b.client, date:b.date, time:b.time, hours:b.hours, rate:b.rate,
+    total:b.total, engineer:b.engineer, paid:b.paid, notes:b.notes||'',
+    created_by:currentUser||'unknown'
+  }]).select();
+  if(error){console.error('Booking save error',error);showSyncBanner('Save failed','err');return;}
+  showSyncBanner('Booking saved & synced ✓');
+}
+
+// ── WORK LOG ──
+async function sbLoadWorkLog(){
+  const {data,error}=await sb.from('work_log').select('*').order('date',{ascending:false});
+  if(error){console.error('Work log load error',error);return;}
+  if(data&&data.length){
+    workLog=data.map(row=>({id:row.id,member:row.member,date:row.date,
+      cat:row.cat,hours:parseFloat(row.hours),desc:row.description,week:row.week}));
+    renderTeam();
+  }
+}
+
+async function sbSaveWorkEntry(entry){
+  const {error}=await sb.from('work_log').insert([{
+    member:entry.member, date:entry.date, cat:entry.cat,
+    hours:entry.hours, description:entry.desc, week:entry.week
+  }]);
+  if(error){console.error('Work log save error',error);showSyncBanner('Save failed','err');return;}
+  showSyncBanner('Work entry logged ✓');
+}
+
+// ── A&R PIPELINE ──
+async function sbLoadAnr(){
+  const {data,error}=await sb.from('anr_prospects').select('*').order('created_at',{ascending:false});
+  if(error){console.error('A&R load error',error);return;}
+  if(data&&data.length){
+    // Merge with local static prospects — DB takes priority by name
+    data.forEach(row=>{
+      const mapped={id:row.id,name:row.name,ig:row.ig||'',a_r:row.a_r,
+        stage:row.stage,genre:row.genre,priority:row.priority,
+        notes:row.notes,date:row.prospect_date,dbId:row.id};
+      const existing=ANR_PROSPECTS.findIndex(p=>p.name.toLowerCase()===row.name.toLowerCase());
+      if(existing>=0)ANR_PROSPECTS[existing]=mapped;
+      else ANR_PROSPECTS.push(mapped);
+    });
+    renderPipeline();
+  }
+}
+
+async function sbSaveAnr(prospect){
+  const {data,error}=await sb.from('anr_prospects').insert([{
+    name:prospect.name, ig:prospect.ig||'', a_r:prospect.a_r,
+    stage:prospect.stage, genre:prospect.genre, priority:prospect.priority,
+    notes:prospect.notes, prospect_date:prospect.date
+  }]).select();
+  if(error){console.error('A&R save error',error);showSyncBanner('Save failed','err');return;}
+  showSyncBanner('Prospect added & synced ✓');
+}
+
+async function sbUpdateAnrStage(id, stage){
+  // Try UUID update first, fallback to name-based
+  await sb.from('anr_prospects').update({stage}).eq('id',id);
+  showSyncBanner(`Stage updated → ${stage} ✓`);
+}
+
+// ── REALTIME SUBSCRIPTIONS ──
+function setupRealtime(){
+  // Invoices
+  sb.channel('invoices-changes').on('postgres_changes',
+    {event:'*',schema:'public',table:'invoices'},
+    payload=>{
+      if(payload.eventType==='INSERT'){
+        const row=payload.new;
+        const exists=INVOICES.find(i=>i.invNum===row.inv_num&&i.invNum);
+        if(!exists){
+          INVOICES.unshift({date:row.date,artist:row.artist,producer:row.producer,
+            subject:row.subject,amount:parseFloat(row.amount),currency:row.currency,
+            invNum:row.inv_num,paid:row.paid,source:'db',notes:row.notes||'',dbId:row.id});
+          computeStats();filterInvoices();renderDashInv();
+          showSyncBanner(`New invoice from ${row.created_by||'teammate'}: ${row.inv_num}`,'info');
+        }
+      }
+      if(payload.eventType==='UPDATE'){
+        const row=payload.new;
+        const inv=INVOICES.find(i=>i.invNum===row.inv_num);
+        if(inv){inv.paid=row.paid;computeStats();filterInvoices();}
+      }
+    }).subscribe();
+
+  // Todos
+  sb.channel('todos-changes').on('postgres_changes',
+    {event:'*',schema:'public',table:'todos'},
+    payload=>{
+      if(payload.eventType==='INSERT'){
+        const row=payload.new;
+        if(!todos.find(t=>t.id===row.id)){
+          todos.unshift({id:row.id,text:row.text,cat:row.cat,pri:row.pri,
+            assigned:row.assigned,due:row.due,done:row.done,created:row.created_at?.slice(0,10)});
+          renderTodos();updateTodoCount();renderDashTodo();
+          showSyncBanner(`New task from ${row.created_by||'teammate'}`,'info');
+        }
+      }
+      if(payload.eventType==='UPDATE'){
+        const t=todos.find(x=>x.id===payload.new.id);
+        if(t){t.done=payload.new.done;renderTodos();updateTodoCount();renderDashTodo();}
+      }
+      if(payload.eventType==='DELETE'){
+        const idx=todos.findIndex(x=>x.id===payload.old.id);
+        if(idx>=0){todos.splice(idx,1);renderTodos();updateTodoCount();renderDashTodo();}
+      }
+    }).subscribe();
+
+  // Studio bookings
+  sb.channel('bookings-changes').on('postgres_changes',
+    {event:'INSERT',schema:'public',table:'studio_bookings'},
+    payload=>{
+      const row=payload.new;
+      if(!STUDIO_BOOKINGS.find(b=>b.id===row.id)){
+        STUDIO_BOOKINGS.unshift({id:row.id,client:row.client,date:row.date,time:row.time,
+          hours:parseFloat(row.hours),rate:parseFloat(row.rate),total:parseFloat(row.total),
+          engineer:row.engineer,paid:row.paid,notes:row.notes});
+        renderStudioStats();renderBookingsTable();
+        showSyncBanner(`New booking: ${row.client} on ${row.date}`,'info');
+      }
+    }).subscribe();
+
+  // Work log
+  sb.channel('worklog-changes').on('postgres_changes',
+    {event:'INSERT',schema:'public',table:'work_log'},
+    payload=>{
+      const row=payload.new;
+      if(!workLog.find(w=>w.id===row.id)){
+        workLog.unshift({id:row.id,member:row.member,date:row.date,
+          cat:row.cat,hours:parseFloat(row.hours),desc:row.description,week:row.week});
+        renderTeam();
+        showSyncBanner(`${row.member} logged work: ${row.description?.slice(0,40)}`,'info');
+      }
+    }).subscribe();
+
+  // A&R
+  sb.channel('anr-changes').on('postgres_changes',
+    {event:'*',schema:'public',table:'anr_prospects'},
+    payload=>{
+      if(payload.eventType==='UPDATE'){
+        const p=ANR_PROSPECTS.find(x=>x.id===payload.new.id||x.name===payload.new.name);
+        if(p){p.stage=payload.new.stage;renderPipeline();}
+      }
+      if(payload.eventType==='INSERT'){
+        const row=payload.new;
+        if(!ANR_PROSPECTS.find(p=>p.name===row.name)){
+          ANR_PROSPECTS.push({id:row.id,name:row.name,ig:row.ig,a_r:row.a_r,
+            stage:row.stage,genre:row.genre,priority:row.priority,notes:row.notes,date:row.prospect_date});
+          renderPipeline();
+          showSyncBanner(`New A&R prospect: ${row.name}`,'info');
+        }
+      }
+    }).subscribe();
+}
+
+// ── PATCH EXISTING FUNCTIONS TO USE SUPABASE ──
+
+// Patch addTodo
+const _origAddTodo = addTodo;
+addTodo = async function(){
+  const text=document.getElementById("todo-new-text").value.trim();
+  if(!text)return;
+  const todo={id:Date.now(),text,cat:document.getElementById("todo-new-cat").value,
+    pri:document.getElementById("todo-new-pri").value,assigned:document.getElementById("todo-new-assign").value,
+    due:document.getElementById("todo-new-due").value,done:false,created:new Date().toISOString().slice(0,10)};
+  await sbAddTodo(todo);
+  todos.unshift(todo);
+  saveTodos(todos);
+  document.getElementById("todo-new-text").value="";document.getElementById("todo-new-due").value="";
+  renderTodos();updateTodoCount();renderDashTodo();
+};
+
+// Patch toggleTodo
+const _origToggleTodo = toggleTodo;
+toggleTodo = function(id){
+  const t=todos.find(x=>x.id===id);
+  if(t){t.done=!t.done;saveTodos(todos);sbToggleTodo(id,t.done);renderTodos();updateTodoCount();renderDashTodo();}
+};
+
+// Patch deleteTodo
+const _origDeleteTodo = deleteTodo;
+deleteTodo = function(id){
+  sbDeleteTodo(id);
+  todos=todos.filter(x=>x.id!==id);saveTodos(todos);renderTodos();updateTodoCount();renderDashTodo();
+};
+
+// Patch addToTracker (new invoice)
+const _origAddToTracker = addToTracker;
+addToTracker = async function(){
+  const dateRaw=document.getElementById("ni-date").value;
+  const num=document.getElementById("ni-num").value;
+  const billName=document.getElementById("ni-billto-name").value||"Unknown";
+  const desc=document.getElementById("ni-desc").value||"";
+  const type=document.getElementById("ni-type").value;
+  const currency=document.getElementById("ni-currency").value;
+  const gross=parseFloat(document.getElementById("ni-gross").value)||0;
+  const rate=parseFloat(document.getElementById("ni-rate").value)||100;
+  const net=+(gross*rate/100).toFixed(2);
+  if(!num||!net){alert("Please fill in the required fields first.");return;}
+  const inv={date:dateRaw,artist:billName,producer:desc.slice(0,40),subject:type,
+    amount:net,currency,invNum:num,paid:false,source:'local',notes:"Created in CRM"};
+  await sbSaveInvoice(inv);
+  INVOICES.unshift(inv);
+  computeStats();
+  alert("Invoice saved & synced to team ✓ — "+num);
+};
+
+// Patch saveBooking
+const _origSaveBooking = saveBooking;
+saveBooking = async function(){
+  const client=document.getElementById("bk-client").value.trim();if(!client)return;
+  const hours=parseFloat(document.getElementById("bk-hours").value)||1;
+  const rate=parseFloat(document.getElementById("bk-rate").value)||0;
+  const booking={id:Date.now(),client,date:document.getElementById("bk-date").value,
+    time:document.getElementById("bk-time").value,hours,rate,total:hours*rate,
+    engineer:document.getElementById("bk-eng").value,
+    paid:document.getElementById("bk-paid").value==="true",
+    notes:document.getElementById("bk-notes").value};
+  await sbSaveBooking(booking);
+  STUDIO_BOOKINGS.unshift(booking);
+  document.getElementById("booking-form-area").innerHTML="";
+  renderStudioStats();renderBookingsTable();
+};
+
+// Patch logWork
+const _origLogWork = logWork;
+logWork = async function(){
+  const desc=document.getElementById("work-desc").value.trim();if(!desc)return;
+  const entry={id:Date.now(),member:document.getElementById("work-member").value,
+    date:document.getElementById("work-date").value,cat:document.getElementById("work-cat").value,
+    hours:parseFloat(document.getElementById("work-hours").value)||0,
+    desc,week:document.getElementById("team-week").value};
+  await sbSaveWorkEntry(entry);
+  workLog.unshift(entry);saveWorkLog(workLog);
+  document.getElementById("work-desc").value="";document.getElementById("work-hours").value="";
+  renderTeam();
+};
+
+// Patch saveAnr
+const _origSaveAnr = saveAnr;
+saveAnr = async function(){
+  const name=document.getElementById("anr-name").value.trim();if(!name)return;
+  const prospect={id:Date.now(),name,ig:document.getElementById("anr-ig").value,
+    a_r:document.getElementById("anr-ar").value,genre:document.getElementById("anr-genre").value,
+    stage:document.getElementById("anr-stage").value,priority:document.getElementById("anr-pri").value,
+    notes:document.getElementById("anr-notes").value,date:new Date().toISOString().slice(0,10)};
+  await sbSaveAnr(prospect);
+  ANR_PROSPECTS.unshift(prospect);
+  document.getElementById("anr-form-area").innerHTML="";renderPipeline();
+};
+
+// Patch moveAnr to sync stage changes
+const _origMoveAnr = moveAnr;
+moveAnr = async function(id, stage){
+  const p=ANR_PROSPECTS.find(x=>x.id===id);
+  if(p){p.stage=stage;renderPipeline();await sbUpdateAnrStage(id,stage);}
+};
+
+// ============================================================
 // INIT
 // ============================================================
 computeStats();
@@ -1929,7 +2298,26 @@ renderCatalogStats();filterCatalog();
 updateTodoCount();
 document.getElementById("team-week").value=new Date().toISOString().slice(0,10).slice(0,7)+"-W"+String(Math.ceil(new Date().getDate()/7)).padStart(2,"0");
 document.getElementById("work-date").value=new Date().toISOString().slice(0,10);
-setTimeout(syncGSheet,1000);
+
+// Load from Supabase on startup
+(async()=>{
+  try{
+    await Promise.all([
+      sbLoadInvoices(),
+      sbLoadTodos(),
+      sbLoadBookings(),
+      sbLoadWorkLog(),
+      sbLoadAnr(),
+    ]);
+    setupRealtime();
+    showSyncBanner('Connected to MMM database ✓');
+  }catch(e){
+    console.error('Supabase init error',e);
+    showSyncBanner('Offline mode — changes will not sync','err');
+  }
+})();
+
+setTimeout(syncGSheet,2000);
 </script>
 </body>
 </html>
