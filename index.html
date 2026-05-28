@@ -108,6 +108,12 @@ select.form-input option{background:var(--surface2)}
 .intern-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px}
 .progress-bar-wrap{background:var(--surface2);border-radius:2px;height:6px;margin-top:6px}
 .progress-bar{height:6px;border-radius:2px;background:var(--denim)}
+/* AUTH SCREEN */
+#auth-screen{position:fixed;inset:0;background:var(--black);display:none;align-items:center;justify-content:center;z-index:1000}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:40px;width:100%;max-width:380px}
+.auth-logo{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:42px;letter-spacing:4px;color:var(--denim);margin-bottom:4px}.auth-logo span{color:var(--gold)}
+.auth-sub{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px}
+.auth-error{font-size:11px;color:#c0514a;margin-top:10px;min-height:16px}
 /* STUDIO */
 .booking-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
 .booking-time{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;min-width:80px}
@@ -183,7 +189,23 @@ select.form-input option{background:var(--surface2)}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">MMM<span>.</span></div>
+    <div class="auth-sub">Miami Music Management · FB Projects LLC</div>
+    <div class="form-group" style="margin-bottom:12px">
+      <div class="form-label">Email</div>
+      <input class="form-input" type="email" id="auth-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')document.getElementById('auth-password').focus()">
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <div class="form-label">Password</div>
+      <input class="form-input" type="password" id="auth-password" placeholder="Password" onkeydown="if(event.key==='Enter')signIn()">
+    </div>
+    <button class="action-btn" id="signin-btn" style="width:100%;padding:11px;font-size:12px;letter-spacing:2px" onclick="signIn()">Sign In</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+<div class="app" id="app" style="display:none">
 <nav class="topnav">
   <div class="brand">MMM<span>.</span></div>
   <button class="nav-btn active" onclick="nav('dashboard',this)">Dashboard</button>
@@ -205,8 +227,9 @@ select.form-input option{background:var(--surface2)}
   <div class="nav-sep"></div>
   <button class="nav-btn" onclick="nav('ai',this)">AI</button>
   <div class="nav-right">
-    <span id="user-badge" onclick="promptUser()" style="cursor:pointer;color:var(--denim);margin-right:8px" title="Click to set your name">${localStorage.getItem('mmm_user')||'Set Name'}</span>
+    <span id="user-badge" onclick="promptUser()" style="cursor:pointer;color:var(--denim);margin-right:8px" title="Click to change display name"></span>
     FB Projects LLC · Miami
+    <button class="nav-btn" onclick="signOut()" style="color:var(--text3);margin-left:6px">Sign Out</button>
   </div>
 </nav>
 <div id="sync-banner" style="display:none;position:fixed;bottom:16px;right:16px;padding:10px 18px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1px;color:#fff;z-index:999;transition:all .3s"></div>
@@ -1925,19 +1948,49 @@ function addToTracker(){
 }
 
 // ============================================================
-// SUPABASE — Real-time shared database
+// SUPABASE — Real-time shared database + Auth
 // ============================================================
-function promptUser(){
-  const name=prompt("Enter your name (Mike, Kai, Juss, Alex, Sheldon, or Brooke):",currentUser||'');
-  if(name)setUser(name.trim());
-}
 const SUPABASE_URL = 'https://honyobysbyhxaqmgduuc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvbnlvYnlzYnloeGFxbWdkdXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDExNzIsImV4cCI6MjA5NTU3NzE3Mn0.dFIkse3ALuqX8NHzs2lAwi_FU5Qq1rho-pqnS4_C4eI';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Who is using this session
-let currentUser = localStorage.getItem('mmm_user') || '';
-function setUser(name){ currentUser=name; localStorage.setItem('mmm_user',name); document.getElementById('user-badge').textContent=name||'Set Name'; }
+let currentUser = '';
+
+function getDisplayName(user){
+  if(!user)return'';
+  return user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+}
+
+async function promptUser(){
+  const name=prompt("Display name:",currentUser||'');
+  if(name&&name.trim()){
+    currentUser=name.trim();
+    document.getElementById('user-badge').textContent=currentUser;
+    await sb.auth.updateUser({data:{full_name:currentUser}});
+  }
+}
+
+async function signIn(){
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
+  const errEl=document.getElementById('auth-error');
+  errEl.textContent='';
+  if(!email||!password){errEl.textContent='Enter your email and password.';return;}
+  const btn=document.getElementById('signin-btn');
+  btn.textContent='Signing in…';btn.disabled=true;
+  const{error}=await sb.auth.signInWithPassword({email,password});
+  btn.textContent='Sign In';btn.disabled=false;
+  if(error)errEl.textContent=error.message;
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('auth-email').value='';
+  document.getElementById('auth-password').value='';
+  document.getElementById('auth-error').textContent='';
+}
 
 // ── SYNC STATUS BANNER ──
 function showSyncBanner(msg, type='ok'){
@@ -2289,18 +2342,22 @@ moveAnr = async function(id, stage){
 };
 
 // ============================================================
-// INIT
+// INIT — runs after successful auth
 // ============================================================
-computeStats();
-renderDashInv();renderDashAlerts();renderDashAnr();renderDashContractAlerts();
-renderDashTodo();filterInvoices();filterClients();
-renderCatalogStats();filterCatalog();
-updateTodoCount();
-document.getElementById("team-week").value=new Date().toISOString().slice(0,10).slice(0,7)+"-W"+String(Math.ceil(new Date().getDate()/7)).padStart(2,"0");
-document.getElementById("work-date").value=new Date().toISOString().slice(0,10);
+async function initApp(user){
+  currentUser=getDisplayName(user);
+  document.getElementById('user-badge').textContent=currentUser;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
 
-// Load from Supabase on startup
-(async()=>{
+  computeStats();
+  renderDashInv();renderDashAlerts();renderDashAnr();renderDashContractAlerts();
+  renderDashTodo();filterInvoices();filterClients();
+  renderCatalogStats();filterCatalog();
+  updateTodoCount();
+  document.getElementById("team-week").value=new Date().toISOString().slice(0,10).slice(0,7)+"-W"+String(Math.ceil(new Date().getDate()/7)).padStart(2,"0");
+  document.getElementById("work-date").value=new Date().toISOString().slice(0,10);
+
   try{
     await Promise.all([
       sbLoadInvoices(),
@@ -2315,9 +2372,23 @@ document.getElementById("work-date").value=new Date().toISOString().slice(0,10);
     console.error('Supabase init error',e);
     showSyncBanner('Offline mode — changes will not sync','err');
   }
-})();
+  setTimeout(syncGSheet,2000);
+}
 
-setTimeout(syncGSheet,2000);
+// Auth state listener handles token refresh / session restore
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_IN'&&session)initApp(session.user);
+});
+
+// Bootstrap: check for existing session on load
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){
+    initApp(session.user);
+  }else{
+    document.getElementById('auth-screen').style.display='flex';
+  }
+})();
 </script>
 </body>
 </html>
