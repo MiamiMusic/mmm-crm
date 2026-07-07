@@ -1953,6 +1953,7 @@ function addToTracker(){
 // ============================================================
 // SUPABASE — Real-time shared database + Auth
 // ============================================================
+const GSHEET_URL = 'https://script.google.com/macros/s/AKfycbxpGTDtDVhPUabK6yfTbJ7SVOyK2ajJJKnndr7Ijz5KxfpQ6fgE9GwN_u8J6qMqJdYQ/exec';
 const SUPABASE_URL = 'https://honyobysbyhxaqmgduuc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvbnlvYnlzYnloeGFxbWdkdXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDExNzIsImV4cCI6MjA5NTU3NzE3Mn0.dFIkse3ALuqX8NHzs2lAwi_FU5Qq1rho-pqnS4_C4eI';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -2296,10 +2297,22 @@ addToTracker = async function(){
   if(!num||!net){alert("Please fill in the required fields first.");return;}
   const inv={date:dateRaw,artist:billName,producer:desc.slice(0,40),subject:type,
     amount:net,currency,invNum:num,paid:false,source:'local',notes:"Created in CRM"};
+
+  // Save to Supabase + local
   await sbSaveInvoice(inv);
   INVOICES.unshift(inv);
   computeStats();
-  alert("Invoice saved & synced to team ✓ — "+num);
+
+  // Write to Google Sheet
+  try{
+    await fetch(GSHEET_URL,{method:'POST',body:JSON.stringify({
+      date:dateRaw,artist:billName,producer:desc.slice(0,40),
+      subject:type,amount:net,invNum:num
+    })});
+    alert("Invoice saved & synced to team + Google Sheet ✓ — "+num);
+  }catch(e){
+    alert("Invoice saved to CRM ✓ — "+num+"\n(Google Sheet sync failed — check connection)");
+  }
 };
 
 // Patch saveBooking
