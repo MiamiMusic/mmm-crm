@@ -1102,30 +1102,50 @@ function filterInvoices(){
     <td style="font-size:9px;color:var(--text3)">${i.notes||"—"}</td>
   </tr>`).join("")}
 
+const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/1bGFmDLImeV1GeL8zCUxFp6KhqK4Fh0LxeconnGNBAPE/export?format=csv&gid=168874316';
 async function syncGSheet(){
   setStatus("Syncing...","pending");
   try{
-    const res=await fetch(GSHEET_URL,{method:'POST',body:JSON.stringify({action:'read'})});
-    const json=await res.json();
-    if(json.error){console.error('Sheet sync error:',json.error);setStatus("Script error","err");return;}
-    const rows=json.rows||[];
-    if(!rows.length){setStatus("No data in sheet","err");return;}
+    const res=await fetch(SHEET_CSV_URL);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    const lines=text.split(/\r?\n/);
+    // Find header row (contains "date")
+    let headerIdx=-1;
+    let headers=[];
+    for(let i=0;i<lines.length;i++){
+      const cols=parseCSVLine(lines[i]);
+      if(cols.some(c=>c.toLowerCase().trim()==='date')){headerIdx=i;headers=cols.map(c=>c.toLowerCase().trim());break;}
+    }
+    if(headerIdx<0){setStatus("Header not found","err");return;}
     let added=0;
-    rows.forEach(obj=>{
-      const amt=parseFloat((obj["$$$"]||obj["amount"]||"").replace(/[^0-9.]/g,""))||0;
-      if(!amt||!obj["date"])return;
-      const invNum=(obj["invoice #"]||"").trim();
-      if(INVOICES.find(i=>invNum&&i.invNum===invNum))return;
-      const paidVal=(obj["paid"]||"").toLowerCase().trim();
-      const paid=paidVal==="paid"||paidVal==="yes";
-      INVOICES.unshift({date:obj["date"],artist:obj["artist"]||"",producer:obj["producer"]||"",
-        subject:obj["subject"]||"PA",amount:amt,currency:(obj["$$$"]||"").includes("€")?"EUR":"USD",
-        invNum,paid,source:"sheet",notes:obj["notes"]||"[Sheet]"});
+    for(let i=headerIdx+1;i<lines.length;i++){
+      if(!lines[i].trim())continue;
+      const vals=parseCSVLine(lines[i]);
+      const obj={};headers.forEach((h,idx)=>obj[h]=vals[idx]||'');
+      const amt=parseFloat((obj['$$$']||obj['amount']||'').replace(/[^0-9.]/g,''))||0;
+      if(!amt||!obj['date'])continue;
+      const invNum=(obj['invoice #']||'').trim();
+      if(INVOICES.find(i=>invNum&&i.invNum===invNum))continue;
+      const paidVal=(obj['paid']||'').toLowerCase().trim();
+      const paid=paidVal==='paid'||paidVal==='yes';
+      INVOICES.unshift({date:obj['date'],artist:obj['artist']||'',producer:obj['producer']||'',
+        subject:obj['subject']||'PA',amount:amt,currency:obj['$$$']&&obj['$$$'].includes('€')?'EUR':'USD',
+        invNum,paid,source:'sheet',notes:'[Sheet]'});
       added++;
-    });
+    }
     computeStats();filterInvoices();renderDashInv();
-    setStatus(`✓ +${added} synced`,"ok");
-  }catch(e){console.error('Sheet sync error:',e);setStatus("Sync failed","err");}}
+    setStatus(`✓ +${added} synced`,'ok');
+  }catch(e){console.error('Sheet sync error:',e);setStatus('Sync failed','err');}}
+function parseCSVLine(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(line[i]===','&&!inQ){result.push(cur.trim());cur='';}
+    else cur+=line[i];
+  }
+  result.push(cur.trim());return result;
+}
 function setStatus(msg,cls){const el=document.getElementById("sync-status");el.textContent=msg;el.className="sync-status "+cls;}
 
 // ============================================================
