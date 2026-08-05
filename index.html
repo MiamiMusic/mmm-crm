@@ -1113,21 +1113,28 @@ async function syncGSheet(){
     if(lines.length<2){setStatus("No data","err");return;}
     // First non-empty row is headers
     const headers=parseCSVLine(lines[0]).map(c=>c.toLowerCase().trim());
-    console.log('Sheet headers:',headers);
-    if(!headers.includes('date')&&!headers.includes('$$$')){setStatus("Header not found","err");console.log('First line:',lines[0]);return;}
+    console.log('Sheet headers (joined):',headers.join(' | '));
+    if(lines.length>1)console.log('Row 1 raw:',lines[1]);
+    if(!headers.includes('date')){setStatus("Header not found","err");console.log('First line:',lines[0]);return;}
+    // Find amount column by trying common names
+    const amtKey=headers.find(h=>h==='$'||h==='amount'||h==='total'||h==='fee'||h==='$$$'||h.includes('amount')||h.includes('$'));
+    console.log('Amount column detected:',amtKey);
     let added=0;
     for(let i=1;i<lines.length;i++){
       if(!lines[i].trim())continue;
       const vals=parseCSVLine(lines[i]);
       const obj={};headers.forEach((h,idx)=>obj[h]=vals[idx]||'');
-      const amt=parseFloat((obj['$$$']||obj['amount']||'').replace(/[^0-9.]/g,''))||0;
+      const amtRaw=amtKey?obj[amtKey]:'';
+      const amt=parseFloat((amtRaw||'').replace(/[^0-9.]/g,''))||0;
+      if(i<=3)console.log(`Row ${i}:`,JSON.stringify(obj),'amt=',amt);
       if(!amt||!obj['date'])continue;
-      const invNum=(obj['invoice #']||'').trim();
-      if(INVOICES.find(i=>invNum&&i.invNum===invNum))continue;
-      const paidVal=(obj['paid']||'').toLowerCase().trim();
+      const invNum=(obj['invoice #']||obj['inv #']||obj['inv#']||obj['invoice#']||'').trim();
+      if(INVOICES.find(inv=>invNum&&inv.invNum===invNum))continue;
+      const paidVal=(obj['paid']||obj['status']||'').toLowerCase().trim();
       const paid=paidVal==='paid'||paidVal==='yes';
+      const isEur=amtRaw.includes('€')||((obj['currency']||'').toUpperCase()==='EUR');
       INVOICES.unshift({date:obj['date'],artist:obj['artist']||'',producer:obj['producer']||'',
-        subject:obj['subject']||'PA',amount:amt,currency:obj['$$$']&&obj['$$$'].includes('€')?'EUR':'USD',
+        subject:obj['subject']||'PA',amount:amt,currency:isEur?'EUR':'USD',
         invNum,paid,source:'sheet',notes:'[Sheet]'});
       added++;
     }
