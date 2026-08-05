@@ -488,7 +488,7 @@ select.form-input option{background:var(--surface2)}
 <!-- ═══════════════ A&R PIPELINE ═══════════════ -->
 <div id="section-anr" class="section">
   <div class="section-header">
-    <div><div class="page-title">A&R Pipeline</div><div class="page-sub">Prospect → Trial Run → Offer Out → Signed</div></div>
+    <div><div class="page-title">A&R Pipeline</div><div class="page-sub">Prospect → Intro Meeting Completed → Offer Out → Signed</div></div>
     <button class="action-btn gold" onclick="showAnrForm()">+ Add Prospect</button>
   </div>
   <div id="anr-form-area"></div>
@@ -922,7 +922,7 @@ const SOPS={
     {title:"Identify Prospect",desc:"Find producer/artist via social media, streaming, referral, or cold outreach. Add to A&R pipeline as Prospect."},
     {title:"Due Diligence",desc:"Research: catalog size, streaming numbers, PRO status, existing management/publishing deals, social following, placement history."},
     {title:"Initial Contact",desc:"Reach out via DM, email, or mutual contact. Keep it casual — express interest in their music. Do not mention deal terms."},
-    {title:"Trial Run",desc:"Move to Trial Run stage. Exchange placements informally. See how they communicate and work. Assess fit with MMM roster."},
+    {title:"Intro Meeting Completed",desc:"Move to Intro Meeting Completed stage. Exchange placements informally. See how they communicate and work. Assess fit with MMM roster."},
     {title:"Internal Discussion",desc:"Discuss with Mike, Kai, and relevant team. Agree on deal terms: management vs publishing only, commission %, co-manager."},
     {title:"Send Offer",desc:"Present deal verbally first, then follow with written term sheet. Move to Offer Out stage in pipeline."},
     {title:"Negotiate",desc:"Handle questions and counter-offers. Maintain minimum 15% commission. Consult lawyer for complex situations."},
@@ -1276,7 +1276,7 @@ function goBack(){
 // ============================================================
 const STAGES=[
   {key:"prospect",label:"Prospect",color:"var(--text3)"},
-  {key:"trial",label:"Trial Run",color:"var(--denim)"},
+  {key:"trial",label:"Intro Meeting Completed",color:"var(--denim)"},
   {key:"offer",label:"Offer Out",color:"var(--gold)"},
   {key:"signed",label:"Signed ✓",color:"#4caf7a"},
 ];
@@ -1376,7 +1376,7 @@ function showAnrForm(){
       <div class="form-group"><div class="form-label">IG Handle</div><input class="form-input" type="text" id="anr-ig" placeholder="@handle"></div>
       <div class="form-group"><div class="form-label">A&R</div><select class="form-input" id="anr-ar"><option>Mike</option><option>Kai</option><option>Alex</option><option>Juss</option><option>Sheldon</option></select></div>
       <div class="form-group"><div class="form-label">Genre</div><input class="form-input" type="text" id="anr-genre" placeholder="Producer / Artist / Songwriter"></div>
-      <div class="form-group"><div class="form-label">Stage</div><select class="form-input" id="anr-stage"><option value="prospect">Prospect</option><option value="trial">Trial Run</option><option value="offer">Offer Out</option></select></div>
+      <div class="form-group"><div class="form-label">Stage</div><select class="form-input" id="anr-stage"><option value="prospect">Prospect</option><option value="trial">Intro Meeting Completed</option><option value="offer">Offer Out</option></select></div>
       <div class="form-group"><div class="form-label">Priority</div><select class="form-input" id="anr-pri"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select></div>
       <div class="form-group full"><div class="form-label">Notes</div><input class="form-input" type="text" id="anr-notes" placeholder="Initial observations, referral source, etc."></div>
     </div>
@@ -1689,7 +1689,7 @@ OPEN INVOICES: Fortnite/TJ Rivers $15,000 Sync (MMM052026), P Yungin $1,600 PA (
 
 CATALOG TOP SONGS: 6locc 6a6y/Lil Loaded 50% 761M global, Fast/Sueco 10% 661M, Never Last/Lil Tecca 12.5% 428M, TELL ME WHY/Kid Laroi 10% 317M, Shot Callin/NBA YB 12.5% 253M, Gang Unit/Lil Loaded 50% 283M, Big Guy/Ice Spice 7.5% 268M, BOO/H3ADBAND 40% 118M, Turn Up/PBM (Fortnite) 25% 23M. Total: 3.8B+ global.
 
-A&R PIPELINE: Simmy (Offer Out — high priority), 2Side (Trial Run, Alex), G Beats (Trial Run, Alex), Dodbh (Trial Run, Alex), Thoomin/ItsAKaiBeat (Prospects).
+A&R PIPELINE: Simmy (Offer Out — high priority), 2Side (Intro Meeting Completed, Alex), G Beats (Intro Meeting Completed, Alex), Dodbh (Intro Meeting Completed, Alex), Thoomin/ItsAKaiBeat (Prospects).
 
 CONTRACTS EXPIRING SOON: Simo Fre (expired Mar 2026), Lollypop Beatz (expired Jan 2026), Hardbody B-Eazy (expired Jun 2025), DJ Trebble (expired Jun 2025), TJ Rivers (Jun 2026 — 6 days left).
 
