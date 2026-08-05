@@ -1102,7 +1102,7 @@ function filterInvoices(){
     <td style="font-size:9px;color:var(--text3)">${i.notes||"—"}</td>
   </tr>`).join("")}
 
-const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/1bGFmDLImeV1GeL8zCUxFp6KhqK4Fh0LxeconnGNBAPE/gviz/tq?tqx=out:csv&sheet=2026%20-%20Active%20Invoices';
+const SHEET_CSV_URL='/.netlify/functions/sheet-proxy';
 async function syncGSheet(){
   setStatus("Syncing...","pending");
   try{
