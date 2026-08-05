@@ -219,14 +219,14 @@ select.form-input option{background:var(--surface2)}
   <div class="nav-sep"></div>
   <button class="nav-btn" onclick="nav('clients',this)">Clients</button>
   <button class="nav-btn" onclick="nav('anr',this)">A&R Pipeline</button>
-  <button class="nav-btn" onclick="nav('contracts',this)">Contracts</button>
-  <button class="nav-btn" onclick="nav('royalties',this)">Royalties</button>
-  <button class="nav-btn" onclick="nav('deals',this)">Deals</button>
+  <button class="nav-btn" onclick="nav('contracts',this)" style="display:none">Contracts</button>
+  <button class="nav-btn" onclick="nav('royalties',this)" style="display:none">Royalties</button>
+  <button class="nav-btn" onclick="nav('deals',this)" style="display:none">Deals</button>
   <div class="nav-sep"></div>
   <button class="nav-btn" onclick="nav('studio',this)">Studio</button>
   <button class="nav-btn" onclick="nav('team',this)">Team</button>
   <button class="nav-btn" onclick="nav('internship',this)">Internship</button>
-  <button class="nav-btn" onclick="nav('sops',this)">SOPs</button>
+  <button class="nav-btn" onclick="nav('sops',this)" style="display:none">SOPs</button>
   <div class="nav-sep"></div>
   <button class="nav-btn" onclick="nav('ai',this)">AI</button>
   <div class="nav-right">
@@ -249,11 +249,11 @@ select.form-input option{background:var(--surface2)}
     <span class="sync-status pending" id="sync-status">Not synced</span>
   </div>
   <div class="stat-grid">
-    <div class="stat-card"><div class="stat-label">Outstanding</div><div class="stat-val c-auburn" id="stat-unpaid">—</div><div class="stat-sub">Open invoices</div></div>
-    <div class="stat-card"><div class="stat-label">Collected 2026</div><div class="stat-val c-green" id="stat-paid">—</div><div class="stat-sub">Paid</div></div>
+    <div class="stat-card" style="display:none"><div class="stat-label">Outstanding</div><div class="stat-val c-auburn" id="stat-unpaid">—</div><div class="stat-sub">Open invoices</div></div>
+    <div class="stat-card" style="display:none"><div class="stat-label">Collected 2026</div><div class="stat-val c-green" id="stat-paid">—</div><div class="stat-sub">Paid</div></div>
     <div class="stat-card"><div class="stat-label">A&R Pipeline</div><div class="stat-val c-denim" id="stat-anr">12</div><div class="stat-sub">Prospects tracked</div></div>
     <div class="stat-card"><div class="stat-label">Open Tasks</div><div class="stat-val c-purple" id="stat-todos">0</div><div class="stat-sub">To-do items</div></div>
-    <div class="stat-card"><div class="stat-label">Studio Revenue</div><div class="stat-val c-gold" id="stat-studio">$0</div><div class="stat-sub">2026 bookings</div></div>
+    <div class="stat-card" style="display:none"><div class="stat-label">Studio Revenue</div><div class="stat-val c-gold" id="stat-studio">$0</div><div class="stat-sub">2026 bookings</div></div>
   </div>
   <div class="two-col">
     <div class="card"><div class="card-title">Recent Invoices <button class="card-link" onclick="nav('invoices',document.querySelectorAll('.nav-btn')[2])">View All →</button></div><div id="dash-inv-list"></div></div>
