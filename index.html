@@ -322,6 +322,16 @@ select.form-input option{background:var(--surface2)}
     <button class="filter-btn" onclick="setInvFilter('pa',this)">PA</button>
     <button class="action-btn" onclick="exportInvCSV()">Export CSV</button>
   </div>
+  <div class="toolbar" style="margin-top:-6px" id="inv-date-bar">
+    <span style="font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Date:</span>
+    <button class="filter-btn active" onclick="setInvDate('all',this)">All Time</button>
+    <button class="filter-btn" onclick="setInvDate('month',this)">This Month</button>
+    <button class="filter-btn" onclick="setInvDate('lastmonth',this)">Last Month</button>
+    <button class="filter-btn" onclick="setInvDate('q1',this)">Q1</button>
+    <button class="filter-btn" onclick="setInvDate('q2',this)">Q2</button>
+    <button class="filter-btn" onclick="setInvDate('q3',this)">Q3</button>
+    <button class="filter-btn" onclick="setInvDate('q4',this)">Q4</button>
+  </div>
   <div style="margin-bottom:10px;display:flex;gap:16px;font-size:11px;color:var(--text3)">
     Showing <span id="inv-count-label" style="color:var(--text);margin:0 3px">—</span> · Total <span id="inv-total-label" style="color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:600;margin-left:3px">—</span>
   </div>
@@ -1079,11 +1089,29 @@ function renderClientTodos(clientId){
 // INVOICES
 // ============================================================
 let invFilter="all";
-function setInvFilter(f,btn){invFilter=f;document.querySelectorAll("#section-invoices .filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filterInvoices();}
+let invDateFilter="all";
+function setInvFilter(f,btn){invFilter=f;document.querySelectorAll("#section-invoices .toolbar:first-of-type .filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filterInvoices();}
+function setInvDate(f,btn){invDateFilter=f;document.querySelectorAll("#inv-date-bar .filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");filterInvoices();}
 function filterInvoices(){
   const q=(document.getElementById("inv-search")?.value||"").toLowerCase();
+  const now=new Date();
+  const thisY=now.getFullYear(),thisM=now.getMonth()+1;
+  const lastM=thisM===1?12:thisM-1,lastY=thisM===1?thisY-1:thisY;
+  function inDateRange(dateStr){
+    if(invDateFilter==="all")return true;
+    const d=new Date(dateStr);if(isNaN(d))return true;
+    const y=d.getFullYear(),m=d.getMonth()+1;
+    if(invDateFilter==="month")return y===thisY&&m===thisM;
+    if(invDateFilter==="lastmonth")return y===lastY&&m===lastM;
+    if(invDateFilter==="q1")return m>=1&&m<=3;
+    if(invDateFilter==="q2")return m>=4&&m<=6;
+    if(invDateFilter==="q3")return m>=7&&m<=9;
+    if(invDateFilter==="q4")return m>=10&&m<=12;
+    return true;
+  }
   let data=INVOICES.filter(i=>{
     const m=(i.artist+i.producer+i.invNum+i.subject).toLowerCase().includes(q);if(!m)return false;
+    if(!inDateRange(i.date))return false;
     if(invFilter==="paid")return i.paid;if(invFilter==="unpaid")return!i.paid;
     if(invFilter==="sync")return i.subject.toLowerCase().includes("sync");
     if(invFilter==="pa")return i.subject.toUpperCase()==="PA";return true;
