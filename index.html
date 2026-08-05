@@ -75,11 +75,15 @@ select.form-input option{background:var(--surface2)}
 .pipeline-col{background:var(--surface2);border-radius:6px;padding:12px;min-height:300px}
 .pipeline-col-title{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;justify-content:space-between}
 .pipeline-count{font-size:10px;color:var(--text2)}
-.pipeline-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.pipeline-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px;cursor:grab;transition:border-color .15s,opacity .15s}
 .pipeline-card:hover{border-color:var(--denim)}
+.pipeline-card.dragging{opacity:.4;cursor:grabbing}
+.pipeline-col.drag-over{background:var(--surface);outline:2px dashed var(--denim);outline-offset:-4px}
 .pipeline-name{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px}
 .pipeline-meta{font-size:10px;color:var(--text3);margin-top:3px}
 .pipeline-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.anr-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center}
+.anr-modal{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;width:100%;max-width:440px;position:relative}
 /* CONTRACT TRACKER */
 .contract-alert{background:rgba(138,39,30,.1);border:1px solid rgba(138,39,30,.3);border-radius:6px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .contract-ok{background:rgba(42,122,74,.08);border:1px solid rgba(42,122,74,.2)}
@@ -1282,9 +1286,15 @@ function renderPipeline(){
   const board=document.getElementById("pipeline-board");
   board.innerHTML=STAGES.map(s=>{
     const cards=ANR_PROSPECTS.filter(p=>p.stage===s.key);
-    return`<div class="pipeline-col">
+    return`<div class="pipeline-col" data-stage="${s.key}"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="dropAnr(event,'${s.key}')">
       <div class="pipeline-col-title" style="color:${s.color}">${s.label} <span class="pipeline-count">${cards.length}</span></div>
-      ${cards.map(p=>`<div class="pipeline-card" onclick="showAnrDetail(${p.id})">
+      ${cards.map(p=>`<div class="pipeline-card" draggable="true"
+        ondragstart="dragAnr(event,${p.id})"
+        ondragend="this.classList.remove('dragging')"
+        onclick="showAnrDetail(${p.id})">
         <div class="pipeline-name">${p.name}</div>
         <div class="pipeline-meta">${p.a_r} · ${p.genre}</div>
         <div class="pipeline-tags">
@@ -1292,22 +1302,73 @@ function renderPipeline(){
           ${p.ig?`<span style="font-size:9px;color:var(--text3)">@${p.ig}</span>`:""}
         </div>
         <div style="font-size:10px;color:var(--text3);margin-top:6px">${p.notes}</div>
-        <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
-          ${STAGES.filter(st=>st.key!==p.stage).map(st=>`<button class="action-btn" style="font-size:8px;padding:2px 6px;background:${st.color}" onclick="event.stopPropagation();moveAnr(${p.id},'${st.key}')">→ ${st.label}</button>`).join("")}
-        </div>
       </div>`).join("")}
     </div>`;}).join("");
-  // Also add paused/dropped summary
   const other=ANR_PROSPECTS.filter(p=>["paused","dropped"].includes(p.stage));
   if(other.length){
     board.innerHTML+=`<div style="grid-column:1/-1;margin-top:12px"><div class="card"><div class="card-title">Paused / No-Go</div>
       <table><thead><tr><th>Name</th><th>Stage</th><th>A&R</th><th>Notes</th></tr></thead>
-      <tbody>${other.map(p=>`<tr><td><div class="td-name">${p.name}</div></td><td><span class="badge badge-gray">${p.stage}</span></td><td style="font-size:11px">${p.a_r}</td><td style="font-size:11px;color:var(--text3)">${p.notes}</td></tr>`).join("")}</tbody></table>
+      <tbody>${other.map(p=>`<tr><td><div class="td-name" style="cursor:pointer" onclick="showAnrDetail(${p.id})">${p.name}</div></td><td><span class="badge badge-gray">${p.stage}</span></td><td style="font-size:11px">${p.a_r}</td><td style="font-size:11px;color:var(--text3)">${p.notes}</td></tr>`).join("")}</tbody></table>
     </div></div>`;
   }
   document.getElementById("stat-anr").textContent=ANR_PROSPECTS.filter(p=>!["dropped"].includes(p.stage)).length;
 }
+let _dragAnrId=null;
+function dragAnr(e,id){_dragAnrId=id;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function dropAnr(e,stage){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(_dragAnrId!=null)moveAnr(_dragAnrId,stage);_dragAnrId=null;}
 function moveAnr(id,stage){const p=ANR_PROSPECTS.find(x=>x.id===id);if(p){p.stage=stage;renderPipeline();}}
+
+function showAnrDetail(id){
+  const p=ANR_PROSPECTS.find(x=>x.id===id);if(!p)return;
+  const allStages=[...STAGES,{key:"paused",label:"Paused",color:"var(--text3)"},{key:"dropped",label:"No-Go / Dropped",color:"#8A271E"}];
+  const el=document.createElement('div');
+  el.className='anr-modal-overlay';el.id='anr-modal';
+  el.innerHTML=`<div class="anr-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px">Edit Prospect</div>
+      <button onclick="document.getElementById('anr-modal').remove()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Name</div><input class="form-input" id="ae-name" value="${p.name}"></div>
+      <div class="form-group"><div class="form-label">IG Handle</div><input class="form-input" id="ae-ig" value="${p.ig||''}"></div>
+      <div class="form-group"><div class="form-label">A&R</div><select class="form-input" id="ae-ar">${['Mike','Kai','Alex','Juss','Sheldon'].map(n=>`<option${n===p.a_r?' selected':''}>${n}</option>`).join('')}</select></div>
+      <div class="form-group"><div class="form-label">Type</div><input class="form-input" id="ae-genre" value="${p.genre||''}"></div>
+      <div class="form-group"><div class="form-label">Stage</div><select class="form-input" id="ae-stage">${allStages.map(s=>`<option value="${s.key}"${s.key===p.stage?' selected':''}>${s.label}</option>`).join('')}</select></div>
+      <div class="form-group"><div class="form-label">Priority</div><select class="form-input" id="ae-pri">${['high','med','low'].map(v=>`<option value="${v}"${v===p.priority?' selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="form-group full"><div class="form-label">Notes</div><input class="form-input" id="ae-notes" value="${(p.notes||'').replace(/"/g,'&quot;')}"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="action-btn gold" style="flex:1;padding:9px" onclick="editAnr(${id})">Save Changes</button>
+      <button class="action-btn" style="padding:9px;background:#8A271E;color:#fff" onclick="deleteAnr(${id})">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{if(e.target===el)el.remove();});
+}
+
+async function editAnr(id){
+  const p=ANR_PROSPECTS.find(x=>x.id===id);if(!p)return;
+  p.name=document.getElementById('ae-name').value.trim()||p.name;
+  p.ig=document.getElementById('ae-ig').value.trim();
+  p.a_r=document.getElementById('ae-ar').value;
+  p.genre=document.getElementById('ae-genre').value.trim();
+  p.stage=document.getElementById('ae-stage').value;
+  p.priority=document.getElementById('ae-pri').value;
+  p.notes=document.getElementById('ae-notes').value.trim();
+  document.getElementById('anr-modal').remove();
+  renderPipeline();
+  await sbUpdateAnr(id,{name:p.name,ig:p.ig,a_r:p.a_r,genre:p.genre,stage:p.stage,priority:p.priority,notes:p.notes});
+}
+
+async function deleteAnr(id){
+  if(!confirm('Delete this prospect?'))return;
+  const idx=ANR_PROSPECTS.findIndex(x=>x.id===id);
+  if(idx>=0)ANR_PROSPECTS.splice(idx,1);
+  document.getElementById('anr-modal').remove();
+  renderPipeline();
+  await sbDeleteAnr(id);
+}
+
 function showAnrForm(){
   document.getElementById("anr-form-area").innerHTML=`<div class="card" style="margin-bottom:14px"><div class="card-title">Add Prospect <button class="card-link" onclick="document.getElementById('anr-form-area').innerHTML=''">Cancel</button></div>
     <div class="form-grid">
@@ -2152,9 +2213,23 @@ async function sbSaveAnr(prospect){
 }
 
 async function sbUpdateAnrStage(id, stage){
-  // Try UUID update first, fallback to name-based
   await sb.from('anr_prospects').update({stage}).eq('id',id);
   showSyncBanner(`Stage updated → ${stage} ✓`);
+}
+
+async function sbUpdateAnr(id, fields){
+  const {error}=await sb.from('anr_prospects').update({
+    name:fields.name,ig:fields.ig,a_r:fields.a_r,genre:fields.genre,
+    stage:fields.stage,priority:fields.priority,notes:fields.notes
+  }).eq('id',id);
+  if(error)console.error('A&R update error',error);
+  else showSyncBanner('Prospect updated ✓');
+}
+
+async function sbDeleteAnr(id){
+  const {error}=await sb.from('anr_prospects').delete().eq('id',id);
+  if(error)console.error('A&R delete error',error);
+  else showSyncBanner('Prospect deleted ✓');
 }
 
 // ── REALTIME SUBSCRIPTIONS ──
