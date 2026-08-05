@@ -1103,24 +1103,29 @@ function filterInvoices(){
   </tr>`).join("")}
 
 async function syncGSheet(){
-  const url=document.getElementById("gsheet-url").value.trim();
-  if(!url){setStatus("No URL","err");return;}setStatus("Syncing...","pending");
-  try{const res=await fetch(url);if(!res.ok)throw new Error();
-    const text=await res.text();const lines=text.split("\n");if(lines.length<2){setStatus("No data","err");return;}
-    const headers=lines[0].split(",").map(h=>h.replace(/^"|"$/g,"").trim().toLowerCase());
+  setStatus("Syncing...","pending");
+  try{
+    const res=await fetch(GSHEET_URL+'?action=read');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    const rows=json.rows||[];
+    if(!rows.length){setStatus("No data","err");return;}
     let added=0;
-    lines.slice(1).forEach(line=>{if(!line.trim())return;
-      const vals=line.split(",").map(v=>(v||"").replace(/^"|"$/g,"").trim());
-      const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||"");
+    rows.forEach(obj=>{
       const amt=parseFloat((obj["$$$"]||obj["amount"]||"").replace(/[^0-9.]/g,""))||0;
       if(!amt||!obj["date"])return;
-      const invNum=obj["invoice #"]||"";
+      const invNum=(obj["invoice #"]||"").trim();
       if(INVOICES.find(i=>invNum&&i.invNum===invNum))return;
-      INVOICES.unshift({date:obj["date"],artist:obj["artist"]||"",producer:obj["producer"]||"",subject:obj["subject"]||"PA",amount:amt,currency:"USD",invNum,paid:(obj["paid"]||"").toLowerCase()==="yes",source:"sheet",notes:"[Sheet]"});
+      const paidVal=(obj["paid"]||"").toLowerCase().trim();
+      const paid=paidVal==="paid"||paidVal==="yes";
+      INVOICES.unshift({date:obj["date"],artist:obj["artist"]||"",producer:obj["producer"]||"",
+        subject:obj["subject"]||"PA",amount:amt,currency:(obj["$$$"]||"").includes("€")?"EUR":"USD",
+        invNum,paid,source:"sheet",notes:obj["notes"]||"[Sheet]"});
       added++;
     });
-    computeStats();filterInvoices();renderDashInv();setStatus(`✓ +${added} new`,"ok");
-  }catch(e){setStatus("Error","err");}}
+    computeStats();filterInvoices();renderDashInv();
+    setStatus(`✓ +${added} new`,"ok");
+  }catch(e){setStatus("Error — update Apps Script first","err");console.error('Sheet sync error',e);}}
 function setStatus(msg,cls){const el=document.getElementById("sync-status");el.textContent=msg;el.className="sync-status "+cls;}
 
 // ============================================================
