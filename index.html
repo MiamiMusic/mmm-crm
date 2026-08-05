@@ -2369,7 +2369,10 @@ moveAnr = async function(id, stage){
 // ============================================================
 // INIT — runs after successful auth
 // ============================================================
+let appInitialized = false;
 async function initApp(user){
+  if(appInitialized)return;
+  appInitialized=true;
   currentUser=getDisplayName(user);
   document.getElementById('user-badge').textContent=currentUser;
   document.getElementById('auth-screen').style.display='none';
