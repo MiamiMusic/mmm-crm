@@ -1575,25 +1575,80 @@ const DEPARTMENTS=[
   {key:"marketing",label:"Marketing / Social Media",color:"dirty",supervisor:"Sheldon",desc:"Manage MMM social media accounts, content calendar, promotional campaigns for clients."},
   {key:"management",label:"Management Intern",color:"purple",supervisor:"Mike / Juss",desc:"Shadow management team, assist with invoice collection, client communication, deal tracking."},
 ];
+const DEFAULT_INTERNS=[
+  {id:1,name:"Joel Oliver Vaval",dept:"anr",start:"2026-08-05",email:"joeloliviervaval@gmail.com",position:"Research",supervisor:"Kai / Alex",checkIns:[],tasks:[]},
+  {id:2,name:"Mateo Cubillos",dept:"anr",start:"2026-08-05",email:"prod.classik.mgmt@gmail.com",position:"Research + Marketing",supervisor:"Kai / Alex",checkIns:[],tasks:[]},
+  {id:3,name:"Ethan Tyler Sgro Horrar",dept:"anr",start:"2026-08-05",email:"Ethanhorrar@gmail.com",position:"Research",supervisor:"Kai / Alex",checkIns:[],tasks:[]},
+  {id:4,name:"Ishan Vijay Naik",dept:"marketing",start:"2026-08-05",email:"Ishannaik550@gmail.com",position:"Marketing + Research",supervisor:"Sheldon",checkIns:[],tasks:[]},
+  {id:5,name:"Adam Sader",dept:"anr",start:"2026-08-05",email:"adamsader751@gmail.com",position:"Research",supervisor:"Kai / Alex",checkIns:[],tasks:[]},
+  {id:6,name:"Darrius Lee Christian",dept:"anr",start:"2026-08-05",email:"Darrius.christian713@gmail.com",position:"Research + Admin",supervisor:"Kai / Alex",checkIns:[],tasks:[]},
+  {id:7,name:"Helen Eve Rosa",dept:"marketing",start:"2026-08-05",email:"herosa.02@gmail.com",position:"Marketing",supervisor:"Sheldon",checkIns:[],tasks:[]},
+  {id:8,name:"Katia-lia Cadavid",dept:"management",start:"2026-08-05",email:"Kilicamu0323@gmail.com",position:"Admin",supervisor:"Mike / Juss",checkIns:[],tasks:[]},
+  {id:9,name:"Sloane Quartey",dept:"management",start:"2026-08-05",email:"sloanequartey@gmail.com",position:"Admin + Legal",supervisor:"Mike / Juss",checkIns:[],tasks:[]},
+  {id:10,name:"André Delaney",dept:"anr",start:"2026-08-05",email:"dre.delaney@gmail.com",position:"Research",supervisor:"Kai / Alex",checkIns:[],tasks:[]},
+];
+function loadInterns(){try{const d=JSON.parse(localStorage.getItem("mmm_interns")||"null");return d&&d.length?d:DEFAULT_INTERNS.map(i=>({...i,checkIns:[...i.checkIns],tasks:[...i.tasks]}));}catch{return DEFAULT_INTERNS.map(i=>({...i}));}}
 internList=loadInterns();
-function loadInterns(){try{return JSON.parse(localStorage.getItem("mmm_interns")||"[]");}catch{return[];}}
 function saveInterns(){localStorage.setItem("mmm_interns",JSON.stringify(internList));}
 function showInternForm(){
   document.getElementById("intern-form-area").innerHTML=`<div class="card" style="margin-bottom:14px"><div class="card-title">Add Intern <button class="card-link" onclick="document.getElementById('intern-form-area').innerHTML=''">Cancel</button></div>
     <div class="form-grid">
       <div class="form-group"><div class="form-label">Full Name</div><input class="form-input" type="text" id="int-name" placeholder="Intern name"></div>
       <div class="form-group"><div class="form-label">Department</div><select class="form-input" id="int-dept"><option value="publishing">Publishing Admin</option><option value="anr">A&R Research</option><option value="marketing">Marketing / Social Media</option><option value="management">Management Intern</option></select></div>
-      <div class="form-group"><div class="form-label">Start Date</div><input class="form-input" type="date" id="int-start"></div>
+      <div class="form-group"><div class="form-label">Start Date</div><input class="form-input" type="date" id="int-start" value="2026-08-05"></div>
       <div class="form-group"><div class="form-label">Email</div><input class="form-input" type="email" id="int-email"></div>
-      <div class="form-group"><div class="form-label">School / University</div><input class="form-input" type="text" id="int-school"></div>
-      <div class="form-group"><div class="form-label">Supervisor</div><select class="form-input" id="int-sup"><option>Mike</option><option>Kai</option><option>Juss</option><option>Alex</option><option>Sheldon</option><option>Brooke</option></select></div>
+      <div class="form-group"><div class="form-label">Position</div><input class="form-input" type="text" id="int-pos" placeholder="e.g. Research + Marketing"></div>
+      <div class="form-group"><div class="form-label">Supervisor(s)</div><input class="form-input" type="text" id="int-sup" placeholder="e.g. Kai / Alex"></div>
     </div>
     <button class="action-btn gold" style="width:100%;padding:9px" onclick="saveIntern()">Add Intern</button>
   </div>`;}
 function saveIntern(){
   const name=document.getElementById("int-name").value.trim();if(!name)return;
-  internList.push({id:Date.now(),name,dept:document.getElementById("int-dept").value,start:document.getElementById("int-start").value,email:document.getElementById("int-email").value,school:document.getElementById("int-school").value,supervisor:document.getElementById("int-sup").value,week:0,tasks:[],checkIns:[],rating:0});
+  internList.push({id:Date.now(),name,dept:document.getElementById("int-dept").value,start:document.getElementById("int-start").value,email:document.getElementById("int-email").value,position:document.getElementById("int-pos").value,supervisor:document.getElementById("int-sup").value,tasks:[],checkIns:[]});
   saveInterns();document.getElementById("intern-form-area").innerHTML="";renderInternship();}
+
+function showInternEdit(id){
+  const intern=internList.find(i=>i.id===id);if(!intern)return;
+  const dept=DEPARTMENTS.find(d=>d.key===intern.dept)||DEPARTMENTS[0];
+  const el=document.createElement('div');
+  el.className='anr-modal-overlay';el.id='intern-modal';
+  el.innerHTML=`<div class="anr-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px">Edit Intern</div>
+      <button onclick="document.getElementById('intern-modal').remove()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">Full Name</div><input class="form-input" id="ie-name" value="${intern.name}"></div>
+      <div class="form-group"><div class="form-label">Email</div><input class="form-input" id="ie-email" value="${intern.email||''}"></div>
+      <div class="form-group"><div class="form-label">Department</div><select class="form-input" id="ie-dept">${DEPARTMENTS.map(d=>`<option value="${d.key}"${d.key===intern.dept?' selected':''}>${d.label}</option>`).join('')}</select></div>
+      <div class="form-group"><div class="form-label">Start Date</div><input class="form-input" type="date" id="ie-start" value="${intern.start||''}"></div>
+      <div class="form-group"><div class="form-label">Position</div><input class="form-input" id="ie-pos" value="${intern.position||''}"></div>
+      <div class="form-group"><div class="form-label">Supervisor(s)</div><input class="form-input" id="ie-sup" value="${intern.supervisor||''}"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="action-btn gold" style="flex:1;padding:9px" onclick="saveInternEdit(${id})">Save Changes</button>
+      <button class="action-btn" style="padding:9px;background:#8A271E;color:#fff" onclick="deleteIntern(${id})">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{if(e.target===el)el.remove();});
+}
+function saveInternEdit(id){
+  const intern=internList.find(i=>i.id===id);if(!intern)return;
+  intern.name=document.getElementById('ie-name').value.trim()||intern.name;
+  intern.email=document.getElementById('ie-email').value.trim();
+  intern.dept=document.getElementById('ie-dept').value;
+  intern.start=document.getElementById('ie-start').value;
+  intern.position=document.getElementById('ie-pos').value.trim();
+  intern.supervisor=document.getElementById('ie-sup').value.trim();
+  saveInterns();document.getElementById('intern-modal').remove();renderInternship();
+}
+function deleteIntern(id){
+  if(!confirm('Remove this intern?'))return;
+  internList=internList.filter(i=>i.id!==id);
+  saveInterns();document.getElementById('intern-modal').remove();renderInternship();
+}
+
 function renderInternship(){
   DEPARTMENTS.forEach(d=>{document.getElementById("dep-"+d.key).textContent=internList.filter(i=>i.dept===d.key).length;});
   const grid=document.getElementById("intern-grid");
@@ -1604,13 +1659,16 @@ function renderInternship(){
     const pct=Math.min(Math.round(weeksIn/12*100),100);
     return`<div class="intern-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div class="intern-name">${intern.name}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${dept.label} · ${intern.school||"—"}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="intern-name">${intern.name}</div>
+            <button onclick="showInternEdit(${intern.id})" style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--text3);font-size:9px;padding:2px 7px;cursor:pointer;letter-spacing:1px">EDIT</button>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${intern.position||dept.label} · ${intern.email||''}</div>
           <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
             <span class="badge badge-${dept.color}">${dept.label}</span>
-            <span class="badge badge-gray">Sup: ${intern.supervisor}</span>
-            <span class="badge badge-gray">Week ${weeksIn} of 12</span>
+            <span class="badge badge-gray">Sup: ${intern.supervisor||'—'}</span>
+            <span class="badge badge-gray">Week ${Math.max(weeksIn,0)} of 12</span>
           </div>
         </div>
         <div style="text-align:right">
