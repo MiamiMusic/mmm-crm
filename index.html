@@ -1109,17 +1109,14 @@ async function syncGSheet(){
     const res=await fetch(SHEET_CSV_URL);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
-    const lines=text.split(/\r?\n/);
-    // Find header row (contains "date")
-    let headerIdx=-1;
-    let headers=[];
-    for(let i=0;i<lines.length;i++){
-      const cols=parseCSVLine(lines[i]);
-      if(cols.some(c=>c.toLowerCase().trim()==='date')){headerIdx=i;headers=cols.map(c=>c.toLowerCase().trim());break;}
-    }
-    if(headerIdx<0){setStatus("Header not found","err");return;}
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){setStatus("No data","err");return;}
+    // First non-empty row is headers
+    const headers=parseCSVLine(lines[0]).map(c=>c.toLowerCase().trim());
+    console.log('Sheet headers:',headers);
+    if(!headers.includes('date')&&!headers.includes('$$$')){setStatus("Header not found","err");console.log('First line:',lines[0]);return;}
     let added=0;
-    for(let i=headerIdx+1;i<lines.length;i++){
+    for(let i=1;i<lines.length;i++){
       if(!lines[i].trim())continue;
       const vals=parseCSVLine(lines[i]);
       const obj={};headers.forEach((h,idx)=>obj[h]=vals[idx]||'');
