@@ -685,20 +685,7 @@ const TEAM_MEMBERS=[
   {name:"Brooke",role:"Admin / Publishing",color:"purple"},
 ];
 
-const ANR_PROSPECTS=[
-  {id:1,name:"2Side",ig:"2side_",a_r:"Alex",stage:"trial",genre:"Producer",notes:"Trial run — Spancy Flow vibe",priority:"high",date:"2026-01-15"},
-  {id:2,name:"G Beats",ig:"gbeatswerunthis",a_r:"Alex",stage:"trial",genre:"Producer",notes:"Warming him up",priority:"med",date:"2026-02-01"},
-  {id:3,name:"DamnPablo",ig:"1damnpablo",a_r:"Mike",stage:"signed",genre:"Producer",notes:"Signed — management 20%",priority:"high",date:"2025-10-01"},
-  {id:4,name:"954 Cam",ig:"",a_r:"Juss",stage:"prospect",genre:"Artist/Producer",notes:"Initial outreach",priority:"med",date:"2026-03-01"},
-  {id:5,name:"Thoomin",ig:"",a_r:"Kai",stage:"prospect",genre:"Producer",notes:"Monitoring catalog",priority:"low",date:"2026-04-01"},
-  {id:6,name:"ItsAKaiBeat",ig:"",a_r:"Kai",stage:"prospect",genre:"Producer",notes:"In contact",priority:"med",date:"2026-04-15"},
-  {id:7,name:"Simmy",ig:"",a_r:"Mike",stage:"offer",genre:"Producer",notes:"Offer sent — awaiting response",priority:"high",date:"2026-05-01"},
-  {id:8,name:"Dodbh",ig:"godblessdascammerz",a_r:"Alex",stage:"trial",genre:"Producer",notes:"Trial run initiated",priority:"med",date:"2026-03-15"},
-  {id:9,name:"Cior",ig:"",a_r:"Mike",stage:"paused",genre:"Producer",notes:"On pause — wants to build catalog more",priority:"low",date:"2025-12-01"},
-  {id:10,name:"Devin Joseph",ig:"",a_r:"Mike",stage:"dropped",genre:"Producer",notes:"Terminated — switched to AdminMp for advance",priority:"low",date:"2025-11-01"},
-  {id:11,name:"T9c",ig:"",a_r:"Kai",stage:"dropped",genre:"Producer",notes:"No-go — already signed to Budde",priority:"low",date:"2025-09-01"},
-  {id:12,name:"Cami",ig:"",a_r:"Mike",stage:"dropped",genre:"Producer",notes:"No-go — signed with Internet Money",priority:"low",date:"2025-08-01"},
-];
+const ANR_PROSPECTS=[];
 
 const CONTRACTS=[
   {id:1,client:"Simo Fre",type:"Publishing Admin",start:"2024-03-01",expiry:"2026-03-01",terms:"15% commission · BMI · 2 year",status:"expired",notes:"Renewal needed — still active"},
@@ -2246,18 +2233,13 @@ async function sbSaveWorkEntry(entry){
 async function sbLoadAnr(){
   const {data,error}=await sb.from('anr_prospects').select('*').order('created_at',{ascending:false});
   if(error){console.error('A&R load error',error);return;}
-  if(data&&data.length){
-    // Merge with local static prospects — DB takes priority by name
-    data.forEach(row=>{
-      const mapped={id:row.id,name:row.name,ig:row.ig||'',a_r:row.a_r,
-        stage:row.stage,genre:row.genre,priority:row.priority,
-        notes:row.notes,date:row.prospect_date,dbId:row.id};
-      const existing=ANR_PROSPECTS.findIndex(p=>p.name.toLowerCase()===row.name.toLowerCase());
-      if(existing>=0)ANR_PROSPECTS[existing]=mapped;
-      else ANR_PROSPECTS.push(mapped);
-    });
-    renderPipeline();
-  }
+  ANR_PROSPECTS.length=0;
+  (data||[]).forEach(row=>{
+    ANR_PROSPECTS.push({id:row.id,name:row.name,ig:row.ig||'',a_r:row.a_r,
+      stage:row.stage,genre:row.genre,priority:row.priority,
+      notes:row.notes,date:row.prospect_date,dbId:row.id});
+  });
+  renderPipeline();
 }
 
 async function sbSaveAnr(prospect){
