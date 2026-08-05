@@ -1105,14 +1105,9 @@ function filterInvoices(){
 async function syncGSheet(){
   setStatus("Syncing...","pending");
   try{
-    const res=await fetch(GSHEET_URL+'?action=read');
-    const text=await res.text();
-    let json;
-    try{json=JSON.parse(text);}catch(pe){
-      console.error('Sheet sync — non-JSON response:',text.slice(0,300));
-      setStatus("Error — check deployment access","err");return;
-    }
-    if(json.error){console.error('Sheet sync error from script:',json.error);setStatus("Script error — see console","err");return;}
+    const res=await fetch(GSHEET_URL,{method:'POST',body:JSON.stringify({action:'read'})});
+    const json=await res.json();
+    if(json.error){console.error('Sheet sync error:',json.error);setStatus("Script error","err");return;}
     const rows=json.rows||[];
     if(!rows.length){setStatus("No data in sheet","err");return;}
     let added=0;
@@ -1130,7 +1125,7 @@ async function syncGSheet(){
     });
     computeStats();filterInvoices();renderDashInv();
     setStatus(`✓ +${added} synced`,"ok");
-  }catch(e){console.error('Sheet sync fetch error:',e);setStatus("Fetch error — see console","err");}}
+  }catch(e){console.error('Sheet sync error:',e);setStatus("Sync failed","err");}}
 function setStatus(msg,cls){const el=document.getElementById("sync-status");el.textContent=msg;el.className="sync-status "+cls;}
 
 // ============================================================
