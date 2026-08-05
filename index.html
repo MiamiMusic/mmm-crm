@@ -1114,8 +1114,9 @@ async function syncGSheet(){
     // First non-empty row is headers
     const headers=parseCSVLine(lines[0]).map(c=>c.toLowerCase().trim());
     console.log('Sheet headers (joined):',headers.join(' | '));
+    console.log('Raw first line:',lines[0]);
     if(lines.length>1)console.log('Row 1 raw:',lines[1]);
-    if(!headers.includes('date')){setStatus("Header not found","err");console.log('First line:',lines[0]);return;}
+    if(!headers.some(h=>h.includes('date')||h.includes('day'))){setStatus("Cols: "+headers.slice(0,5).join(', '),"err");return;}
     // Find amount column by trying common names
     const amtKey=headers.find(h=>h==='$'||h==='amount'||h==='total'||h==='fee'||h==='$$$'||h.includes('amount')||h.includes('$'));
     console.log('Amount column detected:',amtKey);
