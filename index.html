@@ -223,6 +223,7 @@ select.form-input option{background:var(--surface2)}
   <div class="nav-sep"></div>
   <button class="nav-btn" onclick="nav('clients',this)">Clients</button>
   <button class="nav-btn" onclick="nav('anr',this)">A&R Pipeline</button>
+  <button class="nav-btn" onclick="nav('clearances',this)">Clearances</button>
   <button class="nav-btn" onclick="nav('contracts',this)" style="display:none">Contracts</button>
   <button class="nav-btn" onclick="nav('royalties',this)" style="display:none">Royalties</button>
   <button class="nav-btn" onclick="nav('deals',this)" style="display:none">Deals</button>
@@ -503,6 +504,26 @@ select.form-input option{background:var(--surface2)}
   </div>
   <div id="anr-form-area"></div>
   <div class="pipeline-board" id="pipeline-board"></div>
+</div>
+
+<!-- ═══════════════ CLEARANCES ═══════════════ -->
+<div id="section-clearances" class="section">
+  <div class="section-header">
+    <div><div class="page-title">Record Clearances</div><div class="page-sub">Updated weekdays at 9:30 AM by the Clearance Agent from mike@ inbox · Team notes are never overwritten</div></div>
+  </div>
+  <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)" id="clr-stats"></div>
+  <div style="display:flex;gap:6px;margin:12px 0;flex-wrap:wrap">
+    <button class="filter-btn active" onclick="setClrFilter('open',this)">Open</button>
+    <button class="filter-btn" onclick="setClrFilter('us',this)">On Us</button>
+    <button class="filter-btn" onclick="setClrFilter('stalled',this)">Stalled 7d+</button>
+    <button class="filter-btn" onclick="setClrFilter('done',this)">Executed / Closed</button>
+    <button class="filter-btn" onclick="setClrFilter('all',this)">All</button>
+    <input class="form-input" id="clr-search" placeholder="Search song, artist, producer, label…" oninput="renderClearances()" style="flex:1;min-width:180px;max-width:320px;margin-left:auto">
+  </div>
+  <div style="overflow-x:auto"><table>
+    <thead><tr><th>Song</th><th>Artist · Producer</th><th>Label / Contact</th><th>Stage</th><th>Waiting On</th><th>Next Action</th><th>Last Activity</th><th>Team Notes</th></tr></thead>
+    <tbody id="clr-tbody"></tbody>
+  </table></div>
 </div>
 
 <!-- ═══════════════ CONTRACTS ═══════════════ -->
@@ -1846,6 +1867,7 @@ function nav(id,btn){
     case "catalog":renderCatalogStats();filterCatalog();break;
     case "clients":filterClients();break;
     case "anr":renderPipeline();break;
+    case "clearances":renderClearances();break;
     case "contracts":renderContracts();break;
     case "royalties":renderRoyalties();break;
     case "deals":renderDeals();break;
@@ -2331,8 +2353,89 @@ async function sbDeleteAnr(id){
   else showSyncBanner('Prospect deleted ✓');
 }
 
+// ── CLEARANCES ──
+let CLEARANCES=[];
+let clrFilter='open';
+const CLR_STAGES=[
+  {key:'negotiating',label:'Negotiating',badge:'badge-gray'},
+  {key:'draft_received',label:'Draft Received',badge:'badge-denim'},
+  {key:'in_review',label:'In Review / Redlines',badge:'badge-denim'},
+  {key:'out_for_signature',label:'Out for Signature',badge:'badge-gold'},
+  {key:'executed',label:'Fully Executed',badge:'badge-green'},
+  {key:'payment',label:'Payment / PO',badge:'badge-gold'},
+  {key:'closed',label:'Closed',badge:'badge-green'},
+  {key:'on_hold',label:'On Hold',badge:'badge-gray'},
+];
+const CLR_DONE=['executed','closed'];
+function clrEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function clrDays(d){if(!d)return null;return Math.floor((Date.now()-new Date(d+'T12:00:00'))/864e5);}
+
+async function sbLoadClearances(){
+  const {data,error}=await sb.from('clearances').select('*').order('last_activity',{ascending:false});
+  if(error){console.error('Clearances load error',error);return;}
+  CLEARANCES=data||[];
+  renderClearances();
+}
+
+function setClrFilter(f,btn){
+  clrFilter=f;
+  btn.parentElement.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderClearances();
+}
+
+function renderClearances(){
+  const tb=document.getElementById('clr-tbody');if(!tb)return;
+  const open=CLEARANCES.filter(c=>!CLR_DONE.includes(c.stage));
+  const onUs=open.filter(c=>c.waiting_on==='us');
+  const stalled=open.filter(c=>(clrDays(c.last_activity)??0)>=7);
+  const weekDone=CLEARANCES.filter(c=>CLR_DONE.includes(c.stage)&&(clrDays(c.last_activity)??99)<=7);
+  document.getElementById('clr-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Open Clearances</div><div class="stat-val c-denim">${open.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Ball In Our Court</div><div class="stat-val c-gold">${onUs.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Stalled 7+ Days</div><div class="stat-val c-auburn">${stalled.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Executed This Week</div><div class="stat-val c-dirty">${weekDone.length}</div></div>`;
+  const q=(document.getElementById('clr-search')?.value||'').toLowerCase();
+  let rows=CLEARANCES.filter(c=>{
+    const d=clrDays(c.last_activity)??0;
+    if(clrFilter==='open'&&CLR_DONE.includes(c.stage))return false;
+    if(clrFilter==='us'&&(CLR_DONE.includes(c.stage)||c.waiting_on!=='us'))return false;
+    if(clrFilter==='stalled'&&(CLR_DONE.includes(c.stage)||d<7))return false;
+    if(clrFilter==='done'&&!CLR_DONE.includes(c.stage))return false;
+    if(q&&![c.song,c.artist,c.producer,c.label,c.counterparty].join(' ').toLowerCase().includes(q))return false;
+    return true;
+  });
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:24px">Nothing here yet. The Clearance Agent fills this in each weekday at 9:30 AM.</td></tr>`;return;}
+  tb.innerHTML=rows.map(c=>{
+    const d=clrDays(c.last_activity);
+    const dCol=d==null?'var(--text3)':d>=7&&!CLR_DONE.includes(c.stage)?'#c0514a':d>=3?'var(--gold)':'var(--text2)';
+    const stageSel=`<select class="form-input" style="padding:3px 6px;font-size:11px" onchange="sbUpdateClearance(${c.id},{stage:this.value})">${CLR_STAGES.map(s=>`<option value="${s.key}"${s.key===c.stage?' selected':''}>${s.label}</option>`).join('')}</select>`;
+    const wait=c.waiting_on==='us'?'<span class="badge badge-gold">Us</span>':c.waiting_on==='them'?'<span class="badge badge-gray">Them</span>':'';
+    return `<tr>
+      <td><div class="td-name">${c.thread_url?`<a href="${clrEsc(c.thread_url)}" target="_blank" rel="noopener" style="color:inherit">${clrEsc(c.song)}</a>`:clrEsc(c.song)}</div><div style="font-size:10px;color:var(--text3)">${clrEsc(c.doc_type||'')}</div></td>
+      <td style="font-size:11px">${clrEsc(c.artist||'—')}<br><span style="color:var(--text3)">${clrEsc(c.producer||'')}</span></td>
+      <td style="font-size:11px">${clrEsc(c.label||'—')}<br><span style="color:var(--text3)">${clrEsc(c.counterparty||'')}</span></td>
+      <td>${stageSel}</td>
+      <td>${wait}</td>
+      <td style="font-size:11px;max-width:260px" title="${clrEsc(c.agent_summary||'')}">${clrEsc(c.next_action||'')}</td>
+      <td style="font-size:11px;color:${dCol};white-space:nowrap">${c.last_activity?clrEsc(c.last_activity)+'<br>'+(d===0?'today':d+'d ago'):'—'}</td>
+      <td><input class="form-input" style="padding:3px 6px;font-size:11px;min-width:140px" value="${clrEsc(c.team_notes||'')}" onchange="sbUpdateClearance(${c.id},{team_notes:this.value})"></td>
+    </tr>`;}).join('');
+}
+
+async function sbUpdateClearance(id,fields){
+  const c=CLEARANCES.find(x=>x.id===id);if(c)Object.assign(c,fields);
+  const {error}=await sb.from('clearances').update({...fields,updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){console.error('Clearance update error',error);showSyncBanner('Save failed','err');return;}
+  showSyncBanner('Clearance updated ✓');renderClearances();
+}
+
 // ── REALTIME SUBSCRIPTIONS ──
 function setupRealtime(){
+  sb.channel('clearances-changes').on('postgres_changes',
+    {event:'*',schema:'public',table:'clearances'},
+    ()=>sbLoadClearances()).subscribe();
+
   // Invoices
   sb.channel('invoices-changes').on('postgres_changes',
     {event:'*',schema:'public',table:'invoices'},
@@ -2567,6 +2670,7 @@ async function initApp(user){
       sbLoadBookings(),
       sbLoadWorkLog(),
       sbLoadAnr(),
+      sbLoadClearances(),
     ]);
     setupRealtime();
     showSyncBanner('Connected to MMM database ✓');
