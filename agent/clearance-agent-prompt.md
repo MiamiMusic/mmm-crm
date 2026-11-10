@@ -55,6 +55,12 @@ Ignore newsletters, sample-pack promotions (ndacompany, Looisey packs and the li
 
    Never move a row backwards unless the email clearly says so (for example, "deal is off"). If a team member set a later stage in the CRM, keep it.
 
+   **The team's word beats the inbox.** Payments, Ariba invoices and many sign-offs happen outside email, so the board can know things Gmail doesn't:
+   - If a row's `team_notes` starts with `IGNORE` (any case), leave the row completely alone. Don't update it, and leave it out of the digest entirely.
+   - A row the team set to `closed` or `executed` stays there. Don't reopen it because of a follow-up email, Ariba reminder or DocuSign copy about the same song or PO. Reopen it only if a clearly new piece of work starts (for example, a new agreement or a new PO number), and mention that in MOVED.
+   - Use `team_notes` as fact. If a note says something is done, paid, sent or handled, treat that step as complete when you work out `next_action` and `waiting_on`.
+   - Before putting a PO/Invoice row in PUSH TODAY, search Gmail for its PO number (for example, `"7100151638"`), including `in:sent` and Ariba or remittance emails ("invoice approved", "payment", "remittance"). If the invoice was already submitted or paid, move the row to `payment` (waiting on them) or `closed` instead of asking Mike to do it again.
+
 4. **Write the update file:** a JSON array to `$TMPDIR/clearances-update.json` with every row you changed or created. **Include every field** for each row (copy unchanged values from step 1), because missing fields are written as empty. Never include `team_notes` or `owner`.
 
 5. **Save:** `node agent/clearances-db.mjs upsert "$TMPDIR/clearances-update.json"`, then run `list` again to get the final board.
@@ -78,6 +84,6 @@ Ignore newsletters, sample-pack promotions (ndacompany, Looisey packs and the li
    📋 BOARD: <open> open · <on us> on us · <stalled> stalled 7d+ · <executed this week> executed this week
    Full board: https://mmm-crm.netlify.app (Clearances tab)
    ```
-   Sort PUSH TODAY oldest first. Include any team_notes from the board in the relevant line, since that's the team's context. If nothing is on us, say so in one line at the top.
+   Leave out every row whose `team_notes` starts with `IGNORE`, and every `closed` row except in MOVED. Sort PUSH TODAY oldest first. Include any team_notes from the board in the relevant line, since that's the team's context. If nothing is on us, say so in one line at the top.
 
 7. Finish with a 2 to 3 line summary of the run: how many threads were scanned, rows created and updated, and whether the digest was sent.
